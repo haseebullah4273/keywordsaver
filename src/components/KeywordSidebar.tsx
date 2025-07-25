@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Tag, Download, Upload, X } from 'lucide-react';
+import { Plus, Search, Tag, Download, Upload, X, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -60,12 +60,20 @@ export const KeywordSidebar = ({
   };
 
   return (
-    <div className="w-80 bg-card border-r border-border flex flex-col h-full">
+    <div className="w-80 bg-gradient-to-b from-card to-accent/20 border-r border-border/50 flex flex-col h-full shadow-card">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <Tag className="h-5 w-5 text-pinterest" />
-          <h1 className="font-semibold text-lg">Pinterest Keywords</h1>
+      <div className="p-4 border-b border-border/50 bg-card/80 backdrop-blur-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-pinterest/20 rounded-lg blur"></div>
+            <div className="relative bg-pinterest/10 p-2 rounded-lg">
+              <Sparkles className="h-5 w-5 text-pinterest" />
+            </div>
+          </div>
+          <div>
+            <h1 className="font-bold text-lg text-gradient">Pinterest Keywords</h1>
+            <p className="text-xs text-muted-foreground">SEO optimization made simple</p>
+          </div>
         </div>
         
         {/* Search */}
@@ -164,29 +172,56 @@ export const KeywordSidebar = ({
             <h3 className="font-medium mb-3 text-sm text-muted-foreground">
               Main Targets ({mainTargets.length})
             </h3>
-            <div className="space-y-2">
-              {mainTargets.map((target) => (
+            <div className="space-y-3">
+              {mainTargets.map((target, index) => (
                 <div
                   key={target.id}
                   className={cn(
-                    "p-3 rounded-lg border cursor-pointer transition-colors group",
+                    "card-hover p-4 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden fade-in",
                     selectedTarget?.id === target.id
-                      ? "bg-pinterest/10 border-pinterest"
-                      : "bg-card hover:bg-accent/50"
+                      ? "bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 border-pinterest/50 shadow-elegant"
+                      : "bg-gradient-to-r from-card to-accent/30 border border-border/50 hover:border-pinterest/30"
                   )}
+                  style={{ animationDelay: `${index * 100}ms` }}
                   onClick={() => onSelectTarget(target)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm truncate">{target.name}</h4>
-                      <p className="text-xs text-muted-foreground">
-                        {target.relevantKeywords.length} keywords
-                      </p>
+                  {selectedTarget?.id === target.id && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-pinterest/5 to-transparent opacity-50"></div>
+                  )}
+                  
+                  <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className={cn(
+                        "w-3 h-3 rounded-full transition-colors",
+                        selectedTarget?.id === target.id ? "bg-pinterest" : "bg-muted-foreground/40"
+                      )}></div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h4 className={cn(
+                          "font-semibold text-sm truncate transition-colors",
+                          selectedTarget?.id === target.id ? "text-pinterest" : "text-foreground"
+                        )}>
+                          {target.name}
+                        </h4>
+                        
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge 
+                            variant={target.relevantKeywords.length > 10 ? "default" : "secondary"} 
+                            className="text-xs"
+                          >
+                            {target.relevantKeywords.length} keywords
+                          </Badge>
+                          {target.relevantKeywords.length > 20 && (
+                            <TrendingUp className="h-3 w-3 text-success" />
+                          )}
+                        </div>
+                      </div>
                     </div>
+                    
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0"
+                      className="opacity-0 group-hover:opacity-100 transition-all duration-200 h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
                         onDeleteTarget(target.id);
@@ -198,9 +233,27 @@ export const KeywordSidebar = ({
                 </div>
               ))}
               {mainTargets.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  No main targets yet. Click "Add Target" to get started.
-                </p>
+                <div className="text-center py-12">
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 rounded-full blur-lg"></div>
+                    <div className="relative bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 p-6 rounded-full w-fit mx-auto">
+                      <Sparkles className="h-8 w-8 text-pinterest" />
+                    </div>
+                  </div>
+                  <h4 className="font-semibold mb-2">Start Your Pinterest Journey</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Create your first main target keyword to begin organizing your Pinterest SEO strategy.
+                  </p>
+                  <Button 
+                    variant="pinterest" 
+                    size="sm"
+                    onClick={() => setIsAddDialogOpen(true)}
+                    className="btn-elegant"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Target
+                  </Button>
+                </div>
               )}
             </div>
           </div>

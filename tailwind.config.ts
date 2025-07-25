@@ -54,8 +54,12 @@ export default {
 				},
 				pinterest: {
 					DEFAULT: 'hsl(var(--pinterest-red))',
-					light: 'hsl(var(--pinterest-light))'
+					'red-dark': 'hsl(var(--pinterest-red-dark))',
+					light: 'hsl(var(--pinterest-light))',
+					glow: 'hsl(var(--pinterest-glow))'
 				},
+				'success-light': 'hsl(var(--success-light))',
+				'warning-light': 'hsl(var(--warning-light))',
 				success: 'hsl(var(--success))',
 				warning: 'hsl(var(--warning))',
 				sidebar: {
@@ -73,6 +77,19 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			backgroundImage: {
+				'gradient-pinterest': 'var(--gradient-pinterest)',
+				'gradient-warm': 'var(--gradient-warm)',
+				'gradient-subtle': 'var(--gradient-subtle)',
+				'gradient-card': 'var(--gradient-card)'
+			},
+			boxShadow: {
+				'elegant': 'var(--shadow-elegant)',
+				'soft': 'var(--shadow-soft)',
+				'card': 'var(--shadow-card)',
+				'glow': 'var(--shadow-glow)',
+				'hover': 'var(--shadow-hover)'
 			},
 			keyframes: {
 				'accordion-down': {

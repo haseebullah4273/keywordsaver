@@ -34,16 +34,34 @@
     --input: 0 0% 91%;
     --ring: 0 78% 63%;
 
+    /* Enhanced Pinterest color palette */
     --pinterest-red: 0 78% 63%;
+    --pinterest-red-dark: 0 78% 53%;
     --pinterest-light: 15 100% 97%;
+    --pinterest-glow: 0 78% 85%;
     --success: 140 69% 58%;
+    --success-light: 140 69% 95%;
     --warning: 45 93% 58%;
+    --warning-light: 45 93% 95%;
     
+    /* Beautiful gradients */
     --gradient-pinterest: linear-gradient(135deg, hsl(0 78% 63%), hsl(345 67% 58%));
+    --gradient-warm: linear-gradient(135deg, hsl(5 72% 61%), hsl(15 82% 65%));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--accent)));
+    
+    /* Elegant shadows */
     --shadow-soft: 0 4px 20px -4px hsl(0 78% 63% / 0.15);
     --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.1);
+    --shadow-elegant: 0 10px 30px -10px hsl(0 78% 63% / 0.25);
+    --shadow-glow: 0 0 40px hsl(var(--pinterest-glow) / 0.4);
+    --shadow-hover: 0 8px 25px -8px hsl(0 78% 63% / 0.3);
+    
+    /* Smooth transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -108,5 +126,80 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Beautiful button hover effects */
+  .btn-elegant {
+    @apply bg-gradient-to-r from-pinterest to-pinterest-red-dark text-white shadow-elegant hover:shadow-glow transform hover:-translate-y-0.5 transition-all duration-300;
+  }
+  
+  /* Card animations */
+  .card-hover {
+    @apply hover:shadow-hover hover:-translate-y-1 transition-all duration-300;
+  }
+  
+  /* Keyword item animations */
+  .keyword-item {
+    @apply transform transition-all duration-200 hover:scale-[1.02] hover:shadow-card;
+  }
+  
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-gradient-to-r from-pinterest to-pinterest-red-dark bg-clip-text text-transparent;
+  }
+  
+  /* Floating animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  /* Pulse glow effect */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: var(--shadow-elegant); }
+    50% { box-shadow: var(--shadow-glow); }
+  }
+  
+  /* Shimmer effect for loading states */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  
+  /* Fade in animation for new items */
+  .fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

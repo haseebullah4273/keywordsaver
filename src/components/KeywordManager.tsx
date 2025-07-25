@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Trash2, Download, Upload, FileText, Copy } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Trash2, Download, Upload, FileText, Copy, BarChart3, TrendingUp, Target, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -29,15 +29,52 @@ export const KeywordManager = ({
   const [editedName, setEditedName] = useState('');
   const { toast } = useToast();
 
+  // Calculate keyword statistics
+  const keywordStats = useMemo(() => {
+    if (!selectedTarget) return null;
+    
+    const totalKeywords = selectedTarget.relevantKeywords.length;
+    const avgLength = totalKeywords > 0 
+      ? Math.round(selectedTarget.relevantKeywords.reduce((sum, kw) => sum + kw.length, 0) / totalKeywords)
+      : 0;
+    
+    const longestKeyword = selectedTarget.relevantKeywords.reduce(
+      (longest, current) => current.length > longest.length ? current : longest,
+      ''
+    );
+    
+    const shortestKeyword = selectedTarget.relevantKeywords.reduce(
+      (shortest, current) => current.length < shortest.length ? current : shortest,
+      selectedTarget.relevantKeywords[0] || ''
+    );
+
+    return {
+      totalKeywords,
+      avgLength,
+      longestKeyword,
+      shortestKeyword,
+      daysActive: Math.floor((Date.now() - selectedTarget.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+    };
+  }, [selectedTarget]);
+
   if (!selectedTarget) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center">
-          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No Target Selected</h3>
-          <p className="text-muted-foreground">
-            Select a main target keyword from the sidebar to manage its relevant keywords.
+      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-background to-accent/20">
+        <div className="text-center max-w-md">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-gradient-to-r from-pinterest/20 to-pinterest-red-dark/20 rounded-full blur-xl"></div>
+            <div className="relative bg-card p-6 rounded-full shadow-soft">
+              <Target className="h-16 w-16 text-pinterest mx-auto float" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-bold mb-2 text-gradient">Ready to Target Keywords?</h3>
+          <p className="text-muted-foreground mb-4">
+            Select a main target keyword from the sidebar to start managing its relevant keywords and boost your Pinterest strategy.
           </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Sparkles className="h-4 w-4 text-pinterest" />
+            <span>Pinterest SEO made simple</span>
+          </div>
         </div>
       </div>
     );
@@ -217,7 +254,44 @@ export const KeywordManager = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-6 overflow-y-auto space-y-6">
+        {/* Statistics Section */}
+        {keywordStats && keywordStats.totalKeywords > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="card-hover bg-gradient-to-br from-pinterest/5 to-pinterest-red-dark/5 border-pinterest/20">
+              <CardContent className="p-4 text-center">
+                <BarChart3 className="h-8 w-8 text-pinterest mx-auto mb-2" />
+                <div className="text-2xl font-bold text-pinterest">{keywordStats.totalKeywords}</div>
+                <div className="text-sm text-muted-foreground">Total Keywords</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="card-hover bg-gradient-to-br from-success/5 to-success/10 border-success/20">
+              <CardContent className="p-4 text-center">
+                <TrendingUp className="h-8 w-8 text-success mx-auto mb-2" />
+                <div className="text-2xl font-bold text-success">{keywordStats.avgLength}</div>
+                <div className="text-sm text-muted-foreground">Avg. Length</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="card-hover bg-gradient-to-br from-warning/5 to-warning/10 border-warning/20">
+              <CardContent className="p-4 text-center">
+                <Target className="h-8 w-8 text-warning mx-auto mb-2" />
+                <div className="text-2xl font-bold text-warning">{keywordStats.daysActive}</div>
+                <div className="text-sm text-muted-foreground">Days Active</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="card-hover bg-gradient-to-br from-accent to-accent/50">
+              <CardContent className="p-4 text-center">
+                <Sparkles className="h-8 w-8 text-pinterest mx-auto mb-2" />
+                <div className="text-2xl font-bold text-foreground">{Math.ceil(keywordStats.totalKeywords / 10)}</div>
+                <div className="text-sm text-muted-foreground">Content Ideas</div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Add Keywords Section */}
         <Card className="mb-6">
           <CardHeader>
@@ -306,17 +380,24 @@ export const KeywordManager = ({
           </CardHeader>
           <CardContent>
             {selectedTarget.relevantKeywords.length > 0 ? (
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 {selectedTarget.relevantKeywords.map((keyword, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border group hover:bg-accent transition-colors"
+                    className="keyword-item flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-card to-accent/30 border border-border/50 group hover:border-pinterest/30 hover:bg-gradient-to-r hover:from-pinterest/5 hover:to-pinterest-red-dark/5 fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <span className="font-medium">{keyword}</span>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-pinterest/60"></div>
+                      <span className="font-medium text-foreground">{keyword}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {keyword.length} chars
+                      </Badge>
+                    </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                      className="opacity-0 group-hover:opacity-100 transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                       onClick={() => onRemoveKeyword(selectedTarget.id, keyword)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -325,9 +406,16 @@ export const KeywordManager = ({
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  No relevant keywords yet. Add some keywords to get started.
+              <div className="text-center py-12">
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 bg-gradient-to-r from-muted/20 to-accent/20 rounded-full blur-lg"></div>
+                  <div className="relative bg-muted/30 p-4 rounded-full w-fit mx-auto">
+                    <Sparkles className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                </div>
+                <h4 className="font-medium mb-2">No Keywords Yet</h4>
+                <p className="text-muted-foreground text-sm">
+                  Add some relevant keywords to get started with your Pinterest SEO strategy.
                 </p>
               </div>
             )}
