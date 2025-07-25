@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Download, Upload, FileText } from 'lucide-react';
+import { Plus, Trash2, Download, Upload, FileText, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,21 +46,28 @@ export const KeywordManager = ({
   const handleAddSingleKeyword = () => {
     if (!newKeyword.trim()) return;
 
-    const result = onAddKeywords(selectedTarget.id, [newKeyword.trim()]);
+    // Parse keywords from textarea (support both line breaks and commas)
+    const keywords = newKeyword
+      .split(/[,\n]/)
+      .map(k => k.trim())
+      .filter(k => k.length > 0);
+
+    const result = onAddKeywords(selectedTarget.id, keywords);
     
+    let message = '';
     if (result.added.length > 0) {
-      toast({
-        title: "Keyword Added",
-        description: `"${result.added[0]}" has been added.`,
-      });
-      setNewKeyword('');
-    } else if (result.duplicates.length > 0) {
-      toast({
-        title: "Duplicate Keyword",
-        description: "This keyword already exists.",
-        variant: "destructive",
-      });
+      message += `${result.added.length} keyword${result.added.length > 1 ? 's' : ''} added. `;
     }
+    if (result.duplicates.length > 0) {
+      message += `${result.duplicates.length} duplicate${result.duplicates.length > 1 ? 's' : ''} skipped. `;
+    }
+
+    toast({
+      title: "Keywords Added",
+      description: message.trim(),
+    });
+
+    setNewKeyword('');
   };
 
   const handleBulkAdd = () => {
@@ -128,6 +135,22 @@ export const KeywordManager = ({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const copyAllKeywords = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedTarget.relevantKeywords.join('\n'));
+      toast({
+        title: "Keywords Copied",
+        description: "All relevant keywords have been copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy keywords to clipboard.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -204,21 +227,21 @@ export const KeywordManager = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Single Keyword Input */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Enter a relevant keyword..."
+            {/* Single/Multiple Keywords Input */}
+            <div className="space-y-2">
+              <Textarea
+                placeholder="Enter relevant keywords (one per line or separated by commas)..."
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddSingleKeyword()}
-                className="flex-1"
+                className="min-h-[100px] resize-none"
               />
               <Button 
                 onClick={handleAddSingleKeyword}
                 variant="pinterest"
                 disabled={!newKeyword.trim()}
+                className="w-full"
               >
-                Add
+                Add Keywords
               </Button>
             </div>
 
@@ -266,7 +289,20 @@ export const KeywordManager = ({
         {/* Keywords List */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Relevant Keywords</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Relevant Keywords</CardTitle>
+              {selectedTarget.relevantKeywords.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={copyAllKeywords}
+                  className="gap-2"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy All
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {selectedTarget.relevantKeywords.length > 0 ? (
