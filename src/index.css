@@ -60,6 +60,18 @@
     /* Smooth transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* Glass morphism effects */
+    --glass-light: rgba(255, 255, 255, 0.1);
+    --glass-medium: rgba(255, 255, 255, 0.15);
+    --glass-heavy: rgba(255, 255, 255, 0.25);
+    --backdrop-blur: blur(20px);
+    
+    /* Premium shadows */
+    --shadow-premium: 0 8px 32px -8px hsl(0 78% 63% / 0.3), 0 2px 8px -2px hsl(0 0% 0% / 0.05);
+    --shadow-floating: 0 16px 64px -16px hsl(0 78% 63% / 0.4), 0 8px 32px -8px hsl(0 0% 0% / 0.1);
+    --shadow-inner: inset 0 2px 4px hsl(0 0% 0% / 0.06);
+    --shadow-text: 0 2px 4px hsl(0 0% 0% / 0.3);
 
     --radius: 0.75rem;
 
@@ -201,5 +213,75 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+  
+  /* Glass morphism components */
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 shadow-floating;
+  }
+  
+  .glass-button {
+    @apply bg-white/15 backdrop-blur-md border border-white/25 hover:bg-white/25 text-white shadow-premium;
+  }
+  
+  /* Premium gradient backgrounds */
+  .gradient-aurora {
+    background: linear-gradient(135deg, 
+      hsl(var(--pinterest)), 
+      hsl(var(--pinterest-red-dark)), 
+      hsl(315, 50%, 60%), 
+      hsl(250, 70%, 65%)
+    );
+    background-size: 400% 400%;
+    animation: aurora 8s ease-in-out infinite;
+  }
+  
+  @keyframes aurora {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  /* Interactive selection effects */
+  .selection-glow {
+    @apply ring-2 ring-pinterest/40 ring-offset-2 ring-offset-background shadow-glow;
+  }
+  
+  /* Drag and drop states */
+  .dragging {
+    @apply opacity-50 transform scale-95 shadow-none;
+  }
+  
+  .drop-zone-active {
+    @apply border-pinterest border-dashed bg-pinterest/5;
+  }
+  
+  /* Premium scroll indicators */
+  .scroll-indicator {
+    position: relative;
+  }
+  
+  .scroll-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, hsl(var(--pinterest)), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .scroll-indicator:hover::after {
+    opacity: 1;
+  }
+  
+  /* Advanced hover states */
+  .hover-lift {
+    @apply transition-all duration-300 hover:shadow-floating hover:-translate-y-2;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-glow hover:border-pinterest/50;
   }
 }

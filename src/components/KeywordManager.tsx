@@ -1,13 +1,33 @@
 import { useState, useMemo } from 'react';
-import { Plus, Trash2, Download, Upload, FileText, Copy, BarChart3, TrendingUp, Target, Sparkles } from 'lucide-react';
+import { Plus, Trash2, Download, Upload, FileText, Copy, BarChart3, TrendingUp, Target, Sparkles, GripVertical, CheckSquare, Square, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { MainTarget, BulkInputResult } from '@/types/keyword';
 import { useToast } from '@/hooks/use-toast';
+import { KeywordItem } from './KeywordItem';
+import { BulkOperations } from './BulkOperations';
+import { KeywordTemplates } from './KeywordTemplates';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 interface KeywordManagerProps {
   selectedTarget: MainTarget | null;
@@ -27,7 +47,16 @@ export const KeywordManager = ({
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
+  const [isDragMode, setIsDragMode] = useState(false);
   const { toast } = useToast();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Calculate keyword statistics
   const keywordStats = useMemo(() => {
@@ -190,6 +219,107 @@ export const KeywordManager = ({
     }
   };
 
+  // Drag and drop functions
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = selectedTarget.relevantKeywords.indexOf(active.id as string);
+      const newIndex = selectedTarget.relevantKeywords.indexOf(over.id as string);
+      
+      const newKeywords = arrayMove(selectedTarget.relevantKeywords, oldIndex, newIndex);
+      onUpdateTarget(selectedTarget.id, { relevantKeywords: newKeywords });
+      
+      toast({
+        title: "Keywords Reordered",
+        description: "Keyword order has been updated.",
+      });
+    }
+  };
+
+  // Bulk operations
+  const handleToggleSelect = (keyword: string, selected: boolean) => {
+    setSelectedKeywords(prev => 
+      selected 
+        ? [...prev, keyword]
+        : prev.filter(k => k !== keyword)
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedKeywords([...selectedTarget.relevantKeywords]);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedKeywords([]);
+  };
+
+  const handleDeleteSelected = () => {
+    selectedKeywords.forEach(keyword => {
+      onRemoveKeyword(selectedTarget.id, keyword);
+    });
+    setSelectedKeywords([]);
+  };
+
+  const handleCopySelected = async () => {
+    try {
+      await navigator.clipboard.writeText(selectedKeywords.join('\n'));
+      toast({
+        title: "Selected Keywords Copied",
+        description: `${selectedKeywords.length} keywords copied to clipboard.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy keywords to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportSelected = () => {
+    const content = `Selected Keywords from: ${selectedTarget.name}\n\n${selectedKeywords.join('\n')}`;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${selectedTarget.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_selected_keywords.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleEditKeyword = (oldKeyword: string, newKeyword: string) => {
+    const keywords = [...selectedTarget.relevantKeywords];
+    const index = keywords.indexOf(oldKeyword);
+    if (index !== -1) {
+      keywords[index] = newKeyword;
+      onUpdateTarget(selectedTarget.id, { relevantKeywords: keywords });
+      toast({
+        title: "Keyword Updated",
+        description: "Keyword has been updated successfully.",
+      });
+    }
+  };
+
+  const handleAddFromTemplate = (templateKeywords: string[]) => {
+    const result = onAddKeywords(selectedTarget.id, templateKeywords);
+    
+    let message = '';
+    if (result.added.length > 0) {
+      message += `${result.added.length} keywords added from template. `;
+    }
+    if (result.duplicates.length > 0) {
+      message += `${result.duplicates.length} duplicates skipped. `;
+    }
+
+    toast({
+      title: "Template Applied",
+      description: message.trim(),
+    });
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
@@ -293,118 +423,161 @@ export const KeywordManager = ({
         )}
 
         {/* Add Keywords Section */}
-        <Card className="mb-6">
-          <CardHeader>
+        <Card className="mb-6 gradient-aurora relative overflow-hidden">
+          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm"></div>
+          <CardHeader className="relative">
             <CardTitle className="text-lg flex items-center gap-2">
               <Plus className="h-5 w-5 text-pinterest" />
               Add Keywords
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 relative">
             {/* Single/Multiple Keywords Input */}
             <div className="space-y-2">
               <Textarea
                 placeholder="Enter relevant keywords (one per line or separated by commas)..."
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
-                className="min-h-[100px] resize-none"
+                className="min-h-[100px] resize-none glass-card"
               />
               <Button 
                 onClick={handleAddSingleKeyword}
                 variant="pinterest"
                 disabled={!newKeyword.trim()}
-                className="w-full"
+                className="w-full shadow-premium"
               >
                 Add Keywords
               </Button>
             </div>
 
-            {/* Bulk Import */}
-            <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="w-full">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Bulk Add Keywords (One per line)
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Bulk Add Keywords</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Textarea
-                    placeholder="Paste your keywords here, one per line:&#10;vegan dinner ideas&#10;plant-based meals&#10;vegan desserts&#10;healthy vegan recipes"
-                    value={bulkKeywords}
-                    onChange={(e) => setBulkKeywords(e.target.value)}
-                    className="min-h-[200px] resize-none"
-                  />
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={handleBulkAdd}
-                      variant="pinterest"
-                      className="flex-1"
-                      disabled={!bulkKeywords.trim()}
-                    >
-                      Add Keywords
-                    </Button>
-                    <Button 
-                      onClick={() => setIsBulkDialogOpen(false)}
-                      variant="outline"
-                    >
-                      Cancel
-                    </Button>
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-2">
+              <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="glass-button">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Bulk Import
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Bulk Add Keywords</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <Textarea
+                      placeholder="Paste your keywords here, one per line:&#10;vegan dinner ideas&#10;plant-based meals&#10;vegan desserts&#10;healthy vegan recipes"
+                      value={bulkKeywords}
+                      onChange={(e) => setBulkKeywords(e.target.value)}
+                      className="min-h-[200px] resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleBulkAdd}
+                        variant="pinterest"
+                        className="flex-1"
+                        disabled={!bulkKeywords.trim()}
+                      >
+                        Add Keywords
+                      </Button>
+                      <Button 
+                        onClick={() => setIsBulkDialogOpen(false)}
+                        variant="outline"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+
+              <KeywordTemplates onAddKeywords={handleAddFromTemplate} />
+            </div>
           </CardContent>
         </Card>
 
         {/* Keywords List */}
-        <Card>
+        <Card className="scroll-indicator">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Relevant Keywords</CardTitle>
-              {selectedTarget.relevantKeywords.length > 0 && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={copyAllKeywords}
-                  className="gap-2"
-                >
-                  <Copy className="h-4 w-4" />
-                  Copy All
-                </Button>
-              )}
+              <CardTitle className="text-lg flex items-center gap-2">
+                Relevant Keywords
+                {selectedKeywords.length > 0 && (
+                  <Badge variant="default" className="bg-pinterest text-white">
+                    {selectedKeywords.length} selected
+                  </Badge>
+                )}
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                {selectedTarget.relevantKeywords.length > 1 && (
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={isDragMode}
+                      onCheckedChange={setIsDragMode}
+                      id="drag-mode"
+                    />
+                    <Label htmlFor="drag-mode" className="text-sm">
+                      Reorder
+                    </Label>
+                  </div>
+                )}
+                {selectedTarget.relevantKeywords.length > 0 && (
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={selectedKeywords.length === selectedTarget.relevantKeywords.length ? handleDeselectAll : handleSelectAll}
+                      className="gap-1"
+                    >
+                      {selectedKeywords.length === selectedTarget.relevantKeywords.length ? (
+                        <Square className="h-3 w-3" />
+                      ) : (
+                        <CheckSquare className="h-3 w-3" />
+                      )}
+                      {selectedKeywords.length === selectedTarget.relevantKeywords.length ? 'Deselect' : 'Select'} All
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={copyAllKeywords}
+                      className="gap-1"
+                    >
+                      <Copy className="h-3 w-3" />
+                      Copy All
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
             {selectedTarget.relevantKeywords.length > 0 ? (
-              <div className="space-y-2">
-                {selectedTarget.relevantKeywords.map((keyword, index) => (
-                  <div
-                    key={index}
-                    className="keyword-item flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-card to-accent/30 border border-border/50 group hover:border-pinterest/30 hover:bg-gradient-to-r hover:from-pinterest/5 hover:to-pinterest-red-dark/5 fade-in"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-pinterest/60"></div>
-                      <span className="font-medium text-foreground">{keyword}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {keyword.length} chars
-                      </Badge>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => onRemoveKeyword(selectedTarget.id, keyword)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={selectedTarget.relevantKeywords}
+                  strategy={verticalListSortingStrategy}
+                  disabled={!isDragMode}
+                >
+                  <div className="space-y-2">
+                    {selectedTarget.relevantKeywords.map((keyword, index) => (
+                      <KeywordItem
+                        key={keyword}
+                        id={keyword}
+                        keyword={keyword}
+                        index={index}
+                        isSelected={selectedKeywords.includes(keyword)}
+                        onEdit={handleEditKeyword}
+                        onDelete={(kw) => onRemoveKeyword(selectedTarget.id, kw)}
+                        onToggleSelect={handleToggleSelect}
+                        isDragMode={isDragMode}
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             ) : (
               <div className="text-center py-12">
                 <div className="relative mb-4">
@@ -414,13 +587,25 @@ export const KeywordManager = ({
                   </div>
                 </div>
                 <h4 className="font-medium mb-2">No Keywords Yet</h4>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-sm mb-4">
                   Add some relevant keywords to get started with your Pinterest SEO strategy.
                 </p>
+                <KeywordTemplates onAddKeywords={handleAddFromTemplate} />
               </div>
             )}
           </CardContent>
         </Card>
+
+        {/* Bulk Operations Floating Panel */}
+        <BulkOperations
+          selectedKeywords={selectedKeywords}
+          totalKeywords={selectedTarget.relevantKeywords.length}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+          onDeleteSelected={handleDeleteSelected}
+          onCopySelected={handleCopySelected}
+          onExportSelected={handleExportSelected}
+        />
       </div>
     </div>
   );
