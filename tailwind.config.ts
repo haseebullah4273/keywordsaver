@@ -89,7 +89,11 @@ export default {
 				'soft': 'var(--shadow-soft)',
 				'card': 'var(--shadow-card)',
 				'glow': 'var(--shadow-glow)',
-				'hover': 'var(--shadow-hover)'
+				'hover': 'var(--shadow-hover)',
+				'premium': 'var(--shadow-premium)',
+				'floating': 'var(--shadow-floating)',
+				'inner': 'var(--shadow-inner)',
+				'text': 'var(--shadow-text)'
 			},
 			keyframes: {
 				'accordion-down': {
