@@ -217,11 +217,11 @@
   
   /* Glass morphism components */
   .glass-card {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20 shadow-floating;
+    @apply bg-card/80 backdrop-blur-lg border border-border/30 shadow-floating;
   }
   
   .glass-button {
-    @apply bg-white/15 backdrop-blur-md border border-white/25 hover:bg-white/25 text-white shadow-premium;
+    @apply bg-card/60 backdrop-blur-md border border-border/30 hover:bg-card/80 text-foreground shadow-premium;
   }
   
   /* Premium gradient backgrounds */

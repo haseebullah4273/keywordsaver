@@ -55,7 +55,7 @@ export const BulkOperations = ({
               variant="ghost"
               size="sm"
               onClick={isAllSelected ? onDeselectAll : onSelectAll}
-              className="text-white hover:bg-white/20"
+              className="text-foreground hover:bg-accent/20"
             >
               {isAllSelected ? (
                 <Square className="h-4 w-4 mr-1" />
@@ -72,7 +72,7 @@ export const BulkOperations = ({
               variant="ghost"
               size="sm"
               onClick={onCopySelected}
-              className="glass-button"
+              className="glass-button text-foreground hover:bg-accent/20"
             >
               <Copy className="h-4 w-4 mr-1" />
               Copy
@@ -82,7 +82,7 @@ export const BulkOperations = ({
               variant="ghost"
               size="sm"
               onClick={onExportSelected}
-              className="glass-button"
+              className="glass-button text-foreground hover:bg-accent/20"
             >
               <Download className="h-4 w-4 mr-1" />
               Export
@@ -93,7 +93,7 @@ export const BulkOperations = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="glass-button hover:bg-destructive/20"
+                  className="glass-button text-foreground hover:bg-destructive/20 hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
                   Delete
