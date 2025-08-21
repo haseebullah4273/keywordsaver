@@ -320,6 +320,109 @@ export const KeywordManager = ({
     });
   };
 
+  const handleGeneratePrompt = async () => {
+    const seoPrompt = `Write a 1,500-word SEO article titled ${selectedTarget.name} recipe that is both engaging and informative. The article must be written as if you are having a friendly, informal conversation with a fellow enthusiast. Ensure that every instruction below is followed precisely, producing a final output that is dynamic, user-friendly, and thoroughly human in its tone and style.     
+
+Style & Tone Requirements:
+Conversational and Informal:
+Write as if you're talking to a friend. The tone should be relaxed, engaging, and approachable.
+Use everyday language; avoid overly formal or academic language.
+Ensure the narrative flows naturally and doesn't sound scripted or robotic.
+Occasional Sarcasm & Humor:
+Inject light sarcasm and humor to keep the reader engaged. Use these elements sparingly—only enough to maintain a playful tone without overwhelming the content.
+The humor should be witty and subtle; ensure it does not detract from the main points.
+Personal Touch and Experience:
+Include personal opinions or anecdotes where relevant. This adds authenticity and builds trust with the reader.
+When describing features or comparing products, mention personal experiences to make the content more relatable.
+Active Voice Only:
+Write every sentence in the active voice. For example, use "I love this feature" instead of "This feature is loved by many."
+Double-check your sentences to avoid any passive constructions.
+Engagement Through Rhetorical Questions:
+Insert rhetorical questions throughout the article to engage the reader and provoke thought. For example: "Ever wondered why this works so well?"
+These questions should serve as conversation starters and not be overused.
+Use of Slang & Abbreviations:
+Occasionally incorporate common internet slang such as "FYI", "IMO", etc., as well as a few emoticons (e.g., ":)" or ":/").
+Limit these to 2–3 instances per article to keep the content playful yet professional.
+
+Formatting & Structural Requirements:
+Introduction:
+Begin with a short, punchy introduction that immediately hooks the reader.
+Avoid generic openers like "In today's world.." or dive into"
+The introduction should quickly address the reader's needs and set the tone for the rest of the article.
+Headings and Subheadings:
+Organize the article using H2 headings for each major section or point.
+Use H3 headings to break down subtopics within each H2 section when necessary.
+Ensure the headings are clear and descriptive to guide the reader through the content.
+Paragraph Structure:
+Keep paragraphs short and punchy—ideally 3–4 sentences per paragraph.
+Avoid long blocks of text to ensure readability on both desktop and mobile devices.
+Each paragraph should be focused and convey a single idea clearly.
+Bullet Points & Lists:
+When presenting technical details, features, or comparisons, use bullet points or numbered lists.
+These lists should break down information in an easy-to-digest format.
+Bold Key Information:
+Throughout the article, bold the most important points, features, or pieces of information. This helps draw the reader's attention to the essential parts of your message.
+
+Content and SEO Requirements:
+Conciseness and Clarity:
+Every sentence should contribute directly to the article's purpose. Avoid filler phrases such as "dive into" or "in modern times."
+Be clear and direct—every point should have a reason for being there.
+Comparative and Opinion-Based Commentary:
+When comparing products, techniques, or ideas, include clear and honest comparisons that offer genuine insights.
+Support your opinions with logical reasoning and, when possible, real-life examples.
+SEO Optimization:
+Ensure the content is optimized for SEO by naturally including relevant keywords related to ${selectedTarget.name} recipe.
+The language should be SEO-friendly without sacrificing readability or the conversational tone.
+Avoid AI Fluff:
+Do not include generic, AI-generated "fluff" such as overly used phrases like "dive into" or clichés.
+The writing must be human, direct, and purposeful, ensuring that every word adds value.
+
+Detailed Writing Instructions:
+Introduction Section:
+Open with a captivating hook. Immediately address the reader's needs or concerns related to article title
+State your personal connection or experience with the topic if possible.
+Main Body:
+Divide the main content into multiple sections, each introduced by an H2 heading.
+Within each section, use H3 subheadings where necessary to break down complex ideas.
+Incorporate bullet points or numbered lists for technical details or feature comparisons.
+Bold important terms, key features, or takeaways to emphasize their importance.
+Tone and Engagement:
+Maintain a conversational tone by writing as though you're chatting with a friend.
+Use rhetorical questions throughout to encourage reader engagement.
+Occasionally inject a touch of sarcasm or witty humor to make the article enjoyable without undermining its professionalism.
+Sprinkle in internet slang (e.g., "FYI", "IMO") and emoticons no more than 2–3 times in the entire article.
+Sentence Structure:
+Write in a clear, active voice. Ensure every sentence is dynamic and direct.
+Avoid complex, multi-clause sentences that might dilute the clarity of your points.
+Each paragraph should be concise—aim for 3–4 sentences per paragraph to ensure readability.
+Conclusion:
+End with a concise summary that reiterates the key points.
+Offer a final, engaging thought or call to action that encourages the reader to reflect or take the next step.
+Leave the reader with a memorable final impression, perhaps by reintroducing a humorous or personal touch.
+
+Try to include these given keywords naturally in the content:
+
+${selectedTarget.relevantKeywords.join('\n')}
+
+Word count must be over 1000 words. Make sure to increase the length of making process by going into more detail and easy wording. Don't bold the ingredients. Don't use emoji icons at all.
+
+Also Give me 50 words short summary of recipe, ingredients list and making process list after the article. and some more engaging titles ideas under 65 characters as well`;
+
+    try {
+      await navigator.clipboard.writeText(seoPrompt);
+      toast({
+        title: "SEO Prompt Generated",
+        description: "Customized SEO article prompt has been copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy prompt to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
@@ -595,6 +698,30 @@ export const KeywordManager = ({
             )}
           </CardContent>
         </Card>
+
+        {/* SEO Article Prompt Generator */}
+        {selectedTarget && (
+          <div className="mt-8 p-6 bg-gradient-to-br from-background/60 to-accent/10 backdrop-blur-sm border border-border/50 rounded-2xl shadow-premium">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                SEO Article Prompt Generator
+              </h3>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              Generate a customized SEO article prompt using your target keyword and relevant keywords.
+            </p>
+            <Button
+              onClick={handleGeneratePrompt}
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-glow transition-all duration-300"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Generate SEO Article Prompt
+            </Button>
+          </div>
+        )}
 
         {/* Bulk Operations Floating Panel */}
         <BulkOperations
