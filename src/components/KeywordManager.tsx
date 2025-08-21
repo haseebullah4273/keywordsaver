@@ -701,7 +701,7 @@ Also Give me 50 words short summary of recipe, ingredients list and making proce
 
         {/* SEO Article Prompt Generator */}
         {selectedTarget && (
-          <div className="mt-8 p-6 bg-gradient-to-br from-background/60 to-accent/10 backdrop-blur-sm border border-border/50 rounded-2xl shadow-premium">
+          <div className="mt-8 p-6 bg-gradient-to-br from-card to-accent/5 border border-border rounded-2xl shadow-card">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 rounded-xl bg-primary/10">
                 <FileText className="h-5 w-5 text-primary" />
