@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 345 3% 11%;
 
-    --primary: 0 78% 63%;
+    --primary: 140 50% 55%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%;
@@ -24,7 +24,7 @@
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 15 100% 97%;
+    --accent: 130 30% 95%;
     --accent-foreground: 345 3% 11%;
 
     --destructive: 0 84% 60%;
@@ -32,30 +32,30 @@
 
     --border: 0 0% 91%;
     --input: 0 0% 91%;
-    --ring: 0 78% 63%;
+    --ring: 140 50% 55%;
 
-    /* Enhanced Pinterest color palette */
-    --pinterest-red: 0 78% 63%;
-    --pinterest-red-dark: 0 78% 53%;
-    --pinterest-light: 15 100% 97%;
-    --pinterest-glow: 0 78% 85%;
+    /* Enhanced green color palette */
+    --pinterest-red: 140 50% 55%;
+    --pinterest-red-dark: 140 50% 45%;
+    --pinterest-light: 130 30% 95%;
+    --pinterest-glow: 140 50% 80%;
     --success: 140 69% 58%;
     --success-light: 140 69% 95%;
     --warning: 45 93% 58%;
     --warning-light: 45 93% 95%;
     
     /* Beautiful gradients */
-    --gradient-pinterest: linear-gradient(135deg, hsl(0 78% 63%), hsl(345 67% 58%));
-    --gradient-warm: linear-gradient(135deg, hsl(5 72% 61%), hsl(15 82% 65%));
+    --gradient-pinterest: linear-gradient(135deg, hsl(140 50% 55%), hsl(130 45% 50%));
+    --gradient-warm: linear-gradient(135deg, hsl(135 45% 50%), hsl(125 50% 55%));
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted)));
     --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(var(--accent)));
     
     /* Elegant shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(0 78% 63% / 0.15);
+    --shadow-soft: 0 4px 20px -4px hsl(140 50% 55% / 0.15);
     --shadow-card: 0 2px 8px -2px hsl(0 0% 0% / 0.1);
-    --shadow-elegant: 0 10px 30px -10px hsl(0 78% 63% / 0.25);
+    --shadow-elegant: 0 10px 30px -10px hsl(140 50% 55% / 0.25);
     --shadow-glow: 0 0 40px hsl(var(--pinterest-glow) / 0.4);
-    --shadow-hover: 0 8px 25px -8px hsl(0 78% 63% / 0.3);
+    --shadow-hover: 0 8px 25px -8px hsl(140 50% 55% / 0.3);
     
     /* Smooth transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -68,8 +68,8 @@
     --backdrop-blur: blur(20px);
     
     /* Premium shadows */
-    --shadow-premium: 0 8px 32px -8px hsl(0 78% 63% / 0.3), 0 2px 8px -2px hsl(0 0% 0% / 0.05);
-    --shadow-floating: 0 16px 64px -16px hsl(0 78% 63% / 0.4), 0 8px 32px -8px hsl(0 0% 0% / 0.1);
+    --shadow-premium: 0 8px 32px -8px hsl(140 50% 55% / 0.3), 0 2px 8px -2px hsl(0 0% 0% / 0.05);
+    --shadow-floating: 0 16px 64px -16px hsl(140 50% 55% / 0.4), 0 8px 32px -8px hsl(0 0% 0% / 0.1);
     --shadow-inner: inset 0 2px 4px hsl(0 0% 0% / 0.06);
     --shadow-text: 0 2px 4px hsl(0 0% 0% / 0.3);
 
