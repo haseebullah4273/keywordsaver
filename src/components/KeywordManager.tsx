@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Trash2, Download, Upload, FileText, Copy, BarChart3, TrendingUp, Target, Sparkles, GripVertical, CheckSquare, Square, Lightbulb } from 'lucide-react';
+import { Plus, Trash2, Download, Upload, FileText, Copy, BarChart3, TrendingUp, Target, Sparkles, GripVertical, CheckSquare, Square, Lightbulb, Zap, Clock, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -423,6 +423,37 @@ Also Give me 50 words short summary of recipe, ingredients list and making proce
     }
   };
 
+  const handleGeneratePinterestPrompt = async () => {
+    const slugifiedKeyword = selectedTarget.name.toLowerCase().replace(/\s+/g, '-');
+    const pinterestPrompt = `Create 15 high-quality, SEO-optimized Pinterest title and description for the following URL: 
+
+https://example.com/${slugifiedKeyword}
+
+Include the following keywords (choose the most suitable ones):
+
+${selectedTarget.relevantKeywords.join('\n')}
+
+The Title should be catchy, include relevant long-tail keywords naturally, and stay under 70 characters. 
+
+The description must be 400-500 characters long, naturally incorporating 4-5 keywords while ensuring no word is repeated more than twice. Use bold text for keywords. 
+
+Add one emoji in title and one in description and all add CTA in description. Also add hashtags.`;
+
+    try {
+      await navigator.clipboard.writeText(pinterestPrompt);
+      toast({
+        title: "Pinterest Prompt Generated",
+        description: "Customized Pinterest prompt has been copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy prompt to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
@@ -488,40 +519,83 @@ Also Give me 50 words short summary of recipe, ingredients list and making proce
 
       {/* Content */}
       <div className="flex-1 p-6 overflow-y-auto space-y-6">
-        {/* Statistics Section */}
+        {/* Analytics & Quick Insights */}
         {keywordStats && keywordStats.totalKeywords > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card className="card-hover bg-gradient-to-br from-pinterest/5 to-pinterest-red-dark/5 border-pinterest/20">
               <CardContent className="p-4 text-center">
-                <BarChart3 className="h-8 w-8 text-pinterest mx-auto mb-2" />
-                <div className="text-2xl font-bold text-pinterest">{keywordStats.totalKeywords}</div>
-                <div className="text-sm text-muted-foreground">Total Keywords</div>
+                <BarChart3 className="h-6 w-6 text-pinterest mx-auto mb-2" />
+                <div className="text-xl font-bold text-pinterest">{keywordStats.totalKeywords}</div>
+                <div className="text-xs text-muted-foreground">Keywords</div>
               </CardContent>
             </Card>
             
             <Card className="card-hover bg-gradient-to-br from-success/5 to-success/10 border-success/20">
               <CardContent className="p-4 text-center">
-                <TrendingUp className="h-8 w-8 text-success mx-auto mb-2" />
-                <div className="text-2xl font-bold text-success">{keywordStats.avgLength}</div>
-                <div className="text-sm text-muted-foreground">Avg. Length</div>
+                <TrendingUp className="h-6 w-6 text-success mx-auto mb-2" />
+                <div className="text-xl font-bold text-success">{keywordStats.avgLength}</div>
+                <div className="text-xs text-muted-foreground">Avg. Length</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="card-hover bg-gradient-to-br from-info/5 to-info/10 border-info/20">
+              <CardContent className="p-4 text-center">
+                <Clock className="h-6 w-6 text-info mx-auto mb-2" />
+                <div className="text-xl font-bold text-info">{keywordStats.daysActive}</div>
+                <div className="text-xs text-muted-foreground">Days Active</div>
               </CardContent>
             </Card>
             
             <Card className="card-hover bg-gradient-to-br from-warning/5 to-warning/10 border-warning/20">
               <CardContent className="p-4 text-center">
-                <Target className="h-8 w-8 text-warning mx-auto mb-2" />
-                <div className="text-2xl font-bold text-warning">{keywordStats.daysActive}</div>
-                <div className="text-sm text-muted-foreground">Days Active</div>
+                <Zap className="h-6 w-6 text-warning mx-auto mb-2" />
+                <div className="text-xl font-bold text-warning">{Math.ceil(keywordStats.totalKeywords / 10)}</div>
+                <div className="text-xs text-muted-foreground">Content Ideas</div>
               </CardContent>
             </Card>
-            
-            <Card className="card-hover bg-gradient-to-br from-accent to-accent/50">
+
+            <Card className="card-hover bg-gradient-to-br from-purple-500/5 to-purple-600/10 border-purple-500/20">
               <CardContent className="p-4 text-center">
-                <Sparkles className="h-8 w-8 text-pinterest mx-auto mb-2" />
-                <div className="text-2xl font-bold text-foreground">{Math.ceil(keywordStats.totalKeywords / 10)}</div>
-                <div className="text-sm text-muted-foreground">Content Ideas</div>
+                <Users className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                <div className="text-xl font-bold text-purple-500">{selectedKeywords.length}</div>
+                <div className="text-xs text-muted-foreground">Selected</div>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* Quick Actions Bar */}
+        {keywordStats && keywordStats.totalKeywords > 0 && (
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-muted/50 to-accent/20 rounded-xl border border-border/50">
+            <div className="flex items-center gap-4">
+              <div className="text-sm">
+                <span className="font-medium">Quick Stats:</span>
+                <span className="ml-2 text-muted-foreground">
+                  Longest: "{keywordStats.longestKeyword.slice(0, 20)}{keywordStats.longestKeyword.length > 20 ? '...' : ''}" 
+                  ({keywordStats.longestKeyword.length} chars)
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyAllKeywords}
+                className="shadow-sm"
+              >
+                <Copy className="h-3 w-3 mr-1" />
+                Copy All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportKeywords}
+                className="shadow-sm"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                Export
+              </Button>
+            </div>
           </div>
         )}
 
@@ -699,27 +773,52 @@ Also Give me 50 words short summary of recipe, ingredients list and making proce
           </CardContent>
         </Card>
 
-        {/* SEO Article Prompt Generator */}
+        {/* Content Generation Section */}
         {selectedTarget && (
-          <div className="mt-8 p-6 bg-gradient-to-br from-card to-accent/5 border border-border rounded-2xl shadow-card">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-xl bg-primary/10">
-                <FileText className="h-5 w-5 text-primary" />
+          <div className="grid md:grid-cols-2 gap-6 mt-8">
+            {/* SEO Article Prompt Generator */}
+            <div className="p-6 bg-gradient-to-br from-card to-accent/5 border border-border rounded-2xl shadow-card">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl bg-primary/10">
+                  <FileText className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  SEO Article Prompt
+                </h3>
               </div>
-              <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                SEO Article Prompt Generator
-              </h3>
+              <p className="text-muted-foreground mb-4 text-sm">
+                Generate a comprehensive SEO article prompt with your target keyword and relevant keywords.
+              </p>
+              <Button
+                onClick={handleGeneratePrompt}
+                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-glow transition-all duration-300"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Generate Article Prompt
+              </Button>
             </div>
-            <p className="text-muted-foreground mb-4">
-              Generate a customized SEO article prompt using your target keyword and relevant keywords.
-            </p>
-            <Button
-              onClick={handleGeneratePrompt}
-              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-glow transition-all duration-300"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Generate SEO Article Prompt
-            </Button>
+
+            {/* Pinterest Prompt Generator */}
+            <div className="p-6 bg-gradient-to-br from-pinterest/5 to-pinterest-red-dark/5 border border-pinterest/20 rounded-2xl shadow-card">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl bg-pinterest/10">
+                  <Target className="h-5 w-5 text-pinterest" />
+                </div>
+                <h3 className="text-lg font-semibold text-pinterest">
+                  Pinterest Pin Prompt
+                </h3>
+              </div>
+              <p className="text-muted-foreground mb-4 text-sm">
+                Generate Pinterest titles & descriptions with hashtags using your keywords.
+              </p>
+              <Button
+                onClick={handleGeneratePinterestPrompt}
+                className="w-full bg-gradient-to-r from-pinterest to-pinterest-red-dark hover:from-pinterest/90 hover:to-pinterest-red-dark/90 text-white shadow-glow transition-all duration-300"
+              >
+                <Target className="h-4 w-4 mr-2" />
+                Generate Pinterest Prompt
+              </Button>
+            </div>
           </div>
         )}
 
