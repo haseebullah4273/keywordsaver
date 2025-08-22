@@ -777,12 +777,12 @@ Add one emoji in title and one in description and all add CTA in description. Al
         {selectedTarget && (
           <div className="grid md:grid-cols-2 gap-6 mt-8">
             {/* SEO Article Prompt Generator */}
-            <div className="p-6 bg-gradient-to-br from-card to-accent/5 border border-border rounded-2xl shadow-card">
+            <div className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-2xl shadow-card">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 rounded-xl bg-primary/10">
                   <FileText className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h3 className="text-lg font-semibold text-primary">
                   SEO Article Prompt
                 </h3>
               </div>
