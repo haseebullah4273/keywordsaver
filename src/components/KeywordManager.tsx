@@ -493,10 +493,6 @@ Use color scheme very much aligning with the recipe.`;
 
     try {
       await navigator.clipboard.writeText(imagePrompt);
-      toast({
-        title: "Image Prompt Generated",
-        description: "Customized image generation prompt has been copied to clipboard.",
-      });
     } catch (error) {
       toast({
         title: "Copy Failed",
