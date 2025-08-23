@@ -454,6 +454,58 @@ Add one emoji in title and one in description and all add CTA in description. Al
     }
   };
 
+  const handleGenerateImagePrompt = async () => {
+    const hooks = [
+      "Craving Something Delicious?",
+      "Your Next Favorite Recipe Starts Here",
+      "Stop Scrolling! Dinner Inspiration Awaits…",
+      "Quick. Easy. Irresistible.",
+      "Discover the Secret to Flavorful Meals",
+      "Cooking Made Simple (and Delicious!)",
+      "Hungry? Let's Fix That",
+      "A Recipe You'll Want to Save & Share!",
+      "Tired of the Same Old Meals? Try This",
+      "From Kitchen to Table in No Time!"
+    ];
+
+    const ctas = [
+      "Tap to Get the Full Recipe & Instructions!",
+      "Pin Now – Cook Later",
+      "Follow for More Yummy Recipe Ideas",
+      "Your Family Will Thank You – Save This!",
+      "Easy Enough for Weeknights, Delicious Enough for Guests",
+      "Try It Today & Impress Everyone!",
+      "One Recipe You'll Keep Coming Back To",
+      "Don't Just Look… Taste It! Get Recipe",
+      "Click for the Step-by-Step Guide",
+      "Add This to Your Weekly Meal Plan"
+    ];
+
+    const randomHook = hooks[Math.floor(Math.random() * hooks.length)];
+    const randomCta = ctas[Math.floor(Math.random() * ctas.length)];
+
+    const imagePrompt = `Make a compelling and attractive Pinterest Pin on the topic "${selectedTarget.name}". Make a collage of two images one on top and one on bottom and there is a text written in the center with solid color background which consist three parts:
+First Line contains: "${randomHook}".
+Second line contains: "${selectedTarget.name} Recipe",
+Third line contains: "${randomCta}"
+
+Use color scheme very much aligning with the recipe.`;
+
+    try {
+      await navigator.clipboard.writeText(imagePrompt);
+      toast({
+        title: "Image Prompt Generated",
+        description: "Customized image generation prompt has been copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy prompt to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
@@ -775,7 +827,7 @@ Add one emoji in title and one in description and all add CTA in description. Al
 
         {/* Content Generation Section */}
         {selectedTarget && (
-          <div className="grid md:grid-cols-2 gap-6 mt-8">
+          <div className="grid md:grid-cols-3 gap-6 mt-8">
             {/* SEO Article Prompt Generator */}
             <div className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-2xl shadow-card">
               <div className="flex items-center gap-3 mb-4">
@@ -817,6 +869,28 @@ Add one emoji in title and one in description and all add CTA in description. Al
               >
                 <Target className="h-4 w-4 mr-2" />
                 Generate Pinterest Prompt
+              </Button>
+            </div>
+
+            {/* Image Generation Prompt */}
+            <div className="p-6 bg-gradient-to-br from-orange-500/5 to-amber-500/5 border border-orange-500/20 rounded-2xl shadow-card">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl bg-orange-500/10">
+                  <Lightbulb className="h-5 w-5 text-orange-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-orange-500">
+                  Image Generation Prompt
+                </h3>
+              </div>
+              <p className="text-muted-foreground mb-4 text-sm">
+                Generate Pinterest pin design prompts with random hooks and CTAs for image creation.
+              </p>
+              <Button
+                onClick={handleGenerateImagePrompt}
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-500/90 hover:to-amber-500/90 text-white shadow-glow transition-all duration-300"
+              >
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Generate Image Prompt
               </Button>
             </div>
           </div>
