@@ -137,7 +137,7 @@ export const KeywordItem = ({
               "font-medium transition-colors",
               isSelected ? "text-pinterest" : "text-foreground"
             )}>
-              {keyword}
+              {capitalizeWords(keyword)}
             </span>
             <Badge 
               variant={keyword.length > 25 ? "destructive" : keyword.length > 15 ? "secondary" : "default"} 
