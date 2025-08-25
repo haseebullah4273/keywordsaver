@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { MainTarget, BulkInputResult } from '@/types/keyword';
 import { useToast } from '@/hooks/use-toast';
 import { KeywordItem } from './KeywordItem';
-import { capitalizeWords } from '@/lib/utils';
+import { cn, capitalizeWords } from '@/lib/utils';
 import { BulkOperations } from './BulkOperations';
 import { KeywordTemplates } from './KeywordTemplates';
 import {
@@ -539,7 +539,7 @@ Use color scheme very much aligning with the recipe.`;
                 setIsEditingName(true);
               }}
             >
-              {selectedTarget.name}
+              {capitalizeWords(selectedTarget.name)}
             </h2>
           )}
           
