@@ -485,9 +485,9 @@ Add one emoji in title and one in description and all add CTA in description. Al
     const randomHook = hooks[Math.floor(Math.random() * hooks.length)];
     const randomCta = ctas[Math.floor(Math.random() * ctas.length)];
 
-    const imagePrompt = `Make a compelling and attractive Pinterest Pin on the topic "${selectedTarget.name}". Make a collage of two images one on top and one on bottom and there is a text written in the center with solid color background which consist three parts:
+    const imagePrompt = `Make a compelling and attractive Pinterest Pin on the topic "${capitalizeWords(selectedTarget.name)}". Make a collage of two images one on top and one on bottom and there is a text written in the center with solid color background which consist three parts:
 first line contains:"${randomHook}" in simple and bold and compelling text.
-second line contains: "${selectedTarget.name} Recipe" in larger text and noticeable font,
+second line contains: "${capitalizeWords(selectedTarget.name)} Recipe" in larger text and noticeable font,
 third line contains: "${randomCta}"  in handwritting font but liitle smaller the second line.
 
 Use color scheme very much aligning with the recipe.`;
