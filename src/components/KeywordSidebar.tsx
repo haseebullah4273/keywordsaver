@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { MainTarget } from '@/types/keyword';
-import { cn } from '@/lib/utils';
+import { cn, capitalizeWords } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
 interface KeywordSidebarProps {
@@ -201,7 +201,7 @@ export const KeywordSidebar = ({
                           "font-semibold text-sm truncate transition-colors",
                           selectedTarget?.id === target.id ? "text-pinterest" : "text-foreground"
                         )}>
-                          {target.name}
+                          {capitalizeWords(target.name)}
                         </h4>
                         
                         <div className="flex items-center gap-2 mt-1">
