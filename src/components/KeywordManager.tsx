@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { MainTarget, BulkInputResult } from '@/types/keyword';
 import { useToast } from '@/hooks/use-toast';
 import { KeywordItem } from './KeywordItem';
+import { capitalizeWords } from '@/lib/utils';
 import { BulkOperations } from './BulkOperations';
 import { KeywordTemplates } from './KeywordTemplates';
 import {
@@ -115,7 +116,7 @@ export const KeywordManager = ({
     // Parse keywords from textarea (support both line breaks and commas)
     const keywords = newKeyword
       .split(/[,\n]/)
-      .map(k => k.trim())
+      .map(k => capitalizeWords(k.trim()))
       .filter(k => k.length > 0);
 
     const result = onAddKeywords(selectedTarget.id, keywords);
@@ -141,7 +142,7 @@ export const KeywordManager = ({
 
     const keywords = bulkKeywords
       .split('\n')
-      .map(k => k.trim())
+      .map(k => capitalizeWords(k.trim()))
       .filter(k => k.length > 0);
 
     const result = onAddKeywords(selectedTarget.id, keywords);

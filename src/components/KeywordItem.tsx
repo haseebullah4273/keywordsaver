@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { cn } from '@/lib/utils';
+import { cn, capitalizeWords } from '@/lib/utils';
 
 interface KeywordItemProps {
   keyword: string;
@@ -47,8 +47,9 @@ export const KeywordItem = ({
   };
 
   const handleEdit = () => {
-    if (editedKeyword.trim() && editedKeyword.trim() !== keyword) {
-      onEdit(keyword, editedKeyword.trim());
+    const capitalizedKeyword = capitalizeWords(editedKeyword.trim());
+    if (capitalizedKeyword && capitalizedKeyword !== keyword) {
+      onEdit(keyword, capitalizedKeyword);
     }
     setIsEditing(false);
     setEditedKeyword(keyword);
