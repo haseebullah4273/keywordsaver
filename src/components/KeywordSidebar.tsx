@@ -178,40 +178,63 @@ export const KeywordSidebar = ({
                   key={target.id}
                   className={cn(
                     "card-hover p-4 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden fade-in",
-                    selectedTarget?.id === target.id
-                      ? "bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 border-pinterest/50 shadow-elegant"
-                      : "bg-gradient-to-r from-card to-accent/30 border border-border/50 hover:border-pinterest/30"
+                    target.isDone 
+                      ? selectedTarget?.id === target.id
+                        ? "bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-sm dark:from-green-900/20 dark:to-green-800/20 dark:border-green-700/50"
+                        : "bg-gradient-to-r from-muted/50 to-muted/30 border border-border/30 hover:border-green-300/50 opacity-75"
+                      : selectedTarget?.id === target.id
+                        ? "bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 border-pinterest/50 shadow-elegant"
+                        : "bg-gradient-to-r from-card to-accent/30 border border-border/50 hover:border-pinterest/30"
                   )}
                   style={{ animationDelay: `${index * 100}ms` }}
                   onClick={() => onSelectTarget(target)}
                 >
-                  {selectedTarget?.id === target.id && (
+                  {selectedTarget?.id === target.id && !target.isDone && (
                     <div className="absolute inset-0 bg-gradient-to-r from-pinterest/5 to-transparent opacity-50"></div>
+                  )}
+                  {selectedTarget?.id === target.id && target.isDone && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-100/50 to-transparent opacity-50 dark:from-green-800/30"></div>
                   )}
                   
                   <div className="relative flex items-center justify-between">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className={cn(
                         "w-3 h-3 rounded-full transition-colors",
-                        selectedTarget?.id === target.id ? "bg-pinterest" : "bg-muted-foreground/40"
+                        target.isDone
+                          ? "bg-green-500"
+                          : selectedTarget?.id === target.id 
+                            ? "bg-pinterest" 
+                            : "bg-muted-foreground/40"
                       )}></div>
                       
                       <div className="flex-1 min-w-0">
                         <h4 className={cn(
                           "font-semibold text-sm truncate transition-colors",
-                          selectedTarget?.id === target.id ? "text-pinterest" : "text-foreground"
+                          target.isDone
+                            ? "text-green-700 dark:text-green-400 line-through"
+                            : selectedTarget?.id === target.id 
+                              ? "text-pinterest" 
+                              : "text-foreground"
                         )}>
                           {capitalizeWords(target.name)}
                         </h4>
                         
                         <div className="flex items-center gap-2 mt-1">
                           <Badge 
-                            variant={target.relevantKeywords.length > 10 ? "default" : "secondary"} 
-                            className="text-xs"
+                            variant={target.isDone ? "secondary" : target.relevantKeywords.length > 10 ? "default" : "secondary"} 
+                            className={cn(
+                              "text-xs",
+                              target.isDone && "bg-green-100 text-green-700 dark:bg-green-800/30 dark:text-green-400"
+                            )}
                           >
                             {target.relevantKeywords.length} keywords
                           </Badge>
-                          {target.relevantKeywords.length > 20 && (
+                          {target.isDone && (
+                            <Badge className="text-xs bg-green-500 text-white">
+                              ✓ Done
+                            </Badge>
+                          )}
+                          {!target.isDone && target.relevantKeywords.length > 20 && (
                             <TrendingUp className="h-3 w-3 text-success" />
                           )}
                         </div>
