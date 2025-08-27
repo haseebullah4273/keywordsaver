@@ -13,9 +13,11 @@ interface KeywordItemProps {
   index: number;
   id: string;
   isSelected: boolean;
+  isDone?: boolean;
   onEdit: (oldKeyword: string, newKeyword: string) => void;
   onDelete: (keyword: string) => void;
   onToggleSelect: (keyword: string, selected: boolean) => void;
+  onToggleDone?: (keyword: string) => void;
   isDragMode?: boolean;
 }
 
@@ -24,9 +26,11 @@ export const KeywordItem = ({
   index,
   id,
   isSelected,
+  isDone = false,
   onEdit,
   onDelete,
   onToggleSelect,
+  onToggleDone,
   isDragMode = false,
 }: KeywordItemProps) => {
   const [isEditing, setIsEditing] = useState(false);

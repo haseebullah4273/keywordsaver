@@ -15,6 +15,8 @@ const Index = () => {
     deleteMainTarget,
     addRelevantKeywords,
     removeRelevantKeyword,
+    toggleMainTargetDone,
+    toggleRelevantKeywordDone,
     searchKeywords,
     exportData,
     importData,
@@ -146,6 +148,8 @@ const Index = () => {
         onAddKeywords={addRelevantKeywords}
         onRemoveKeyword={removeRelevantKeyword}
         onUpdateTarget={updateMainTarget}
+        onToggleMainTargetDone={toggleMainTargetDone}
+        onToggleRelevantKeywordDone={toggleRelevantKeywordDone}
       />
     </div>
   );

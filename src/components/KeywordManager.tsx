@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Trash2, Download, Upload, FileText, Copy, BarChart3, TrendingUp, Target, Sparkles, GripVertical, CheckSquare, Square, Lightbulb, Zap, Clock, Users } from 'lucide-react';
+import { Plus, Trash2, Download, Upload, FileText, Copy, BarChart3, TrendingUp, Target, Sparkles, GripVertical, CheckSquare, Square, Lightbulb, Zap, Clock, Users, Archive, Check, X, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { MainTarget, BulkInputResult } from '@/types/keyword';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MainTarget, BulkInputResult, RelevantKeyword } from '@/types/keyword';
 import { useToast } from '@/hooks/use-toast';
 import { KeywordItem } from './KeywordItem';
 import { cn, capitalizeWords } from '@/lib/utils';
@@ -35,6 +36,8 @@ interface KeywordManagerProps {
   onAddKeywords: (mainTargetId: string, keywords: string[]) => BulkInputResult;
   onRemoveKeyword: (mainTargetId: string, keyword: string) => void;
   onUpdateTarget: (id: string, updates: Partial<MainTarget>) => void;
+  onToggleMainTargetDone?: (id: string) => void;
+  onToggleRelevantKeywordDone?: (mainTargetId: string, keywordText: string) => void;
 }
 
 export const KeywordManager = ({
@@ -42,6 +45,8 @@ export const KeywordManager = ({
   onAddKeywords,
   onRemoveKeyword,
   onUpdateTarget,
+  onToggleMainTargetDone,
+  onToggleRelevantKeywordDone,
 }: KeywordManagerProps) => {
   const [newKeyword, setNewKeyword] = useState('');
   const [bulkKeywords, setBulkKeywords] = useState('');
@@ -50,6 +55,7 @@ export const KeywordManager = ({
   const [editedName, setEditedName] = useState('');
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [isDragMode, setIsDragMode] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
   const { toast } = useToast();
 
   const sensors = useSensors(
@@ -63,29 +69,44 @@ export const KeywordManager = ({
   const keywordStats = useMemo(() => {
     if (!selectedTarget) return null;
     
+    const activeKeywords = selectedTarget.relevantKeywords.filter(kw => !kw.isDone);
+    const completedKeywords = selectedTarget.relevantKeywords.filter(kw => kw.isDone);
     const totalKeywords = selectedTarget.relevantKeywords.length;
+    
     const avgLength = totalKeywords > 0 
-      ? Math.round(selectedTarget.relevantKeywords.reduce((sum, kw) => sum + kw.length, 0) / totalKeywords)
+      ? Math.round(selectedTarget.relevantKeywords.reduce((sum, kw) => sum + kw.text.length, 0) / totalKeywords)
       : 0;
     
     const longestKeyword = selectedTarget.relevantKeywords.reduce(
-      (longest, current) => current.length > longest.length ? current : longest,
-      ''
+      (longest, current) => current.text.length > longest.text.length ? current : longest,
+      selectedTarget.relevantKeywords[0] || { text: '', isDone: false }
     );
     
     const shortestKeyword = selectedTarget.relevantKeywords.reduce(
-      (shortest, current) => current.length < shortest.length ? current : shortest,
-      selectedTarget.relevantKeywords[0] || ''
+      (shortest, current) => current.text.length < shortest.text.length ? current : shortest,
+      selectedTarget.relevantKeywords[0] || { text: '', isDone: false }
     );
 
     return {
       totalKeywords,
+      activeKeywords: activeKeywords.length,
+      completedKeywords: completedKeywords.length,
       avgLength,
-      longestKeyword,
-      shortestKeyword,
-      daysActive: Math.floor((Date.now() - selectedTarget.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+      longestKeyword: longestKeyword.text,
+      shortestKeyword: shortestKeyword.text,
+      daysActive: Math.floor((Date.now() - selectedTarget.createdAt.getTime()) / (1000 * 60 * 60 * 24)),
+      completionRate: totalKeywords > 0 ? Math.round((completedKeywords.length / totalKeywords) * 100) : 0
     };
   }, [selectedTarget]);
+
+  // Filter keywords based on completion status
+  const displayedKeywords = useMemo(() => {
+    if (!selectedTarget) return [];
+    if (showCompleted) {
+      return selectedTarget.relevantKeywords;
+    }
+    return selectedTarget.relevantKeywords.filter(kw => !kw.isDone);
+  }, [selectedTarget, showCompleted]);
 
   if (!selectedTarget) {
     return (
@@ -178,8 +199,26 @@ export const KeywordManager = ({
     setIsEditingName(false);
   };
 
+  const handleToggleMainTargetDone = () => {
+    if (onToggleMainTargetDone) {
+      onToggleMainTargetDone(selectedTarget.id);
+      toast({
+        title: selectedTarget.isDone ? "Target Reactivated" : "Target Completed",
+        description: selectedTarget.isDone ? "Main target has been moved back to active." : "Main target has been marked as completed!",
+      });
+    }
+  };
+
+  const handleUpdatePriority = (priority: 'low' | 'medium' | 'high') => {
+    onUpdateTarget(selectedTarget.id, { priority });
+    toast({
+      title: "Priority Updated",
+      description: `Target priority set to ${priority}.`,
+    });
+  };
+
   const exportKeywords = () => {
-    const content = `Main Target: ${selectedTarget.name}\n\nRelevant Keywords:\n${selectedTarget.relevantKeywords.join('\n')}`;
+    const content = `Main Target: ${selectedTarget.name}\n\nRelevant Keywords:\n${selectedTarget.relevantKeywords.map(kw => kw.text).join('\n')}`;
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -192,7 +231,7 @@ export const KeywordManager = ({
   };
 
   const exportCSV = () => {
-    const csvContent = `Main Target,Relevant Keywords\n"${selectedTarget.name}","${selectedTarget.relevantKeywords.join(', ')}"`;
+    const csvContent = `Main Target,Relevant Keywords\n"${selectedTarget.name}","${selectedTarget.relevantKeywords.map(kw => kw.text).join(', ')}"`;
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -206,7 +245,7 @@ export const KeywordManager = ({
 
   const copyAllKeywords = async () => {
     try {
-      await navigator.clipboard.writeText(selectedTarget.relevantKeywords.join('\n'));
+      await navigator.clipboard.writeText(selectedTarget.relevantKeywords.map(kw => kw.text).join('\n'));
       toast({
         title: "Keywords Copied",
         description: "All relevant keywords have been copied to clipboard.",
@@ -225,8 +264,8 @@ export const KeywordManager = ({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      const oldIndex = selectedTarget.relevantKeywords.indexOf(active.id as string);
-      const newIndex = selectedTarget.relevantKeywords.indexOf(over.id as string);
+      const oldIndex = displayedKeywords.findIndex(kw => kw.text === active.id);
+      const newIndex = displayedKeywords.findIndex(kw => kw.text === over.id);
       
       const newKeywords = arrayMove(selectedTarget.relevantKeywords, oldIndex, newIndex);
       onUpdateTarget(selectedTarget.id, { relevantKeywords: newKeywords });
@@ -248,7 +287,7 @@ export const KeywordManager = ({
   };
 
   const handleSelectAll = () => {
-    setSelectedKeywords([...selectedTarget.relevantKeywords]);
+    setSelectedKeywords(displayedKeywords.map(kw => kw.text));
   };
 
   const handleDeselectAll = () => {
@@ -293,9 +332,9 @@ export const KeywordManager = ({
 
   const handleEditKeyword = (oldKeyword: string, newKeyword: string) => {
     const keywords = [...selectedTarget.relevantKeywords];
-    const index = keywords.indexOf(oldKeyword);
+    const index = keywords.findIndex(kw => kw.text === oldKeyword);
     if (index !== -1) {
-      keywords[index] = newKeyword;
+      keywords[index] = { ...keywords[index], text: newKeyword };
       onUpdateTarget(selectedTarget.id, { relevantKeywords: keywords });
       toast({
         title: "Keyword Updated",
@@ -372,7 +411,7 @@ Comparative and Opinion-Based Commentary:
 When comparing products, techniques, or ideas, include clear and honest comparisons that offer genuine insights.
 Support your opinions with logical reasoning and, when possible, real-life examples.
 SEO Optimization:
-Ensure the content is optimized for SEO by naturally including relevant keywords related to ${selectedTarget.name} recipe.
+Ensure the content is optimized for SEO by naturally including relevant keywords related to ${capitalizeWords(selectedTarget.name)} recipe.
 The language should be SEO-friendly without sacrificing readability or the conversational tone.
 Avoid AI Fluff:
 Do not include generic, AI-generated "fluff" such as overly used phrases like "dive into" or clichés.
@@ -403,7 +442,7 @@ Leave the reader with a memorable final impression, perhaps by reintroducing a h
 
 Try to include these given keywords naturally in the content:
 
-${selectedTarget.relevantKeywords.join('\n')}
+${selectedTarget.relevantKeywords.map(kw => kw.text).join('\n')}
 
 Word count must be over 1000 words. Make sure to increase the length of making process by going into more detail and easy wording. Don't bold the ingredients. Don't use emoji icons at all.
 
@@ -430,21 +469,33 @@ Also Give me 50 words short summary of recipe, ingredients list and making proce
 
 https://example.com/${slugifiedKeyword}
 
-Include the following keywords (choose the most suitable ones):
+Main Keyword: ${capitalizeWords(selectedTarget.name)}
 
-${selectedTarget.relevantKeywords.join('\n')}
+Related Keywords to use naturally:
+${selectedTarget.relevantKeywords.map(kw => kw.text).join('\n')}
 
-The Title should be catchy, include relevant long-tail keywords naturally, and stay under 70 characters. 
+Requirements:
+1. Each title should be under 100 characters
+2. Each description should be 2-3 sentences and under 500 characters
+3. Include relevant hashtags (8-12 per pin)
+4. Use emotional triggers and action words
+5. Target food enthusiasts and home cooks
+6. Include seasonal references where appropriate
+7. Add urgency and exclusivity phrases
+8. Make them click-worthy but not clickbait
 
-The description must be 400-500 characters long, naturally incorporating 4-5 keywords while ensuring no word is repeated more than twice. Use bold text for keywords. 
+Format each suggestion as:
+TITLE: [Title here]
+DESCRIPTION: [Description here] #hashtag1 #hashtag2 #hashtag3
+---
 
-Add one emoji in title and one in description and all add CTA in description. Also add hashtags.`;
+Focus on recipe benefits, occasion-based targeting, and lifestyle aspirations.`;
 
     try {
       await navigator.clipboard.writeText(pinterestPrompt);
       toast({
         title: "Pinterest Prompt Generated",
-        description: "Customized Pinterest prompt has been copied to clipboard.",
+        description: "Pinterest titles and descriptions prompt has been copied to clipboard.",
       });
     } catch (error) {
       toast({
@@ -457,29 +508,29 @@ Add one emoji in title and one in description and all add CTA in description. Al
 
   const handleGenerateImagePrompt = async () => {
     const hooks = [
-      "Craving Something Delicious?",
-      "Your Next Favorite Recipe Starts Here",
-      "Stop Scrolling! Dinner Inspiration Awaits…",
-      "Quick. Easy. Irresistible.",
-      "Discover the Secret to Flavorful Meals",
-      "Cooking Made Simple (and Delicious!)",
-      "Hungry? Let's Fix That",
-      "A Recipe You'll Want to Save & Share!",
-      "Tired of the Same Old Meals? Try This",
-      "From Kitchen to Table in No Time!"
+      "The Secret To Perfect",
+      "You Won't Believe How Easy",
+      "5-Minute",
+      "One-Bowl",
+      "No-Fail",
+      "Restaurant-Style",
+      "Healthy",
+      "Quick & Easy",
+      "Family-Favorite",
+      "Instagram-Worthy"
     ];
 
     const ctas = [
-      "Tap to Get the Full Recipe & Instructions!",
-      "Pin Now – Cook Later",
-      "Follow for More Yummy Recipe Ideas",
-      "Your Family Will Thank You – Save This!",
-      "Easy Enough for Weeknights, Delicious Enough for Guests",
-      "Try It Today & Impress Everyone!",
-      "One Recipe You'll Keep Coming Back To",
-      "Don't Just Look… Taste It! Get Recipe",
-      "Click for the Step-by-Step Guide",
-      "Add This to Your Weekly Meal Plan"
+      "Get The Recipe →",
+      "Try This Now!",
+      "Save For Later",
+      "Pin To Try",
+      "Recipe Inside ↓",
+      "Must Try!",
+      "So Good!",
+      "Easy Recipe",
+      "Make Today",
+      "Yum Alert!"
     ];
 
     const randomHook = hooks[Math.floor(Math.random() * hooks.length)];
@@ -494,6 +545,10 @@ Use color scheme very much aligning with the recipe.`;
 
     try {
       await navigator.clipboard.writeText(imagePrompt);
+      toast({
+        title: "Image Prompt Generated",
+        description: "Pinterest pin design prompt has been copied to clipboard.",
+      });
     } catch (error) {
       toast({
         title: "Copy Failed",
@@ -503,99 +558,170 @@ Use color scheme very much aligning with the recipe.`;
     }
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'text-red-500';
+      case 'medium': return 'text-yellow-500';
+      case 'low': return 'text-green-500';
+      default: return 'text-gray-500';
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'high': return <Flag className="h-4 w-4" />;
+      case 'medium': return <Flag className="h-4 w-4" />;
+      case 'low': return <Flag className="h-4 w-4" />;
+      default: return <Flag className="h-4 w-4" />;
+    }
+  };
+
   return (
-    <div className="flex-1 flex flex-col h-full">
-      {/* Header */}
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center justify-between mb-4">
-          {isEditingName ? (
-            <div className="flex items-center gap-2 flex-1">
-              <Input
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleUpdateName();
-                  if (e.key === 'Escape') setIsEditingName(false);
-                }}
-                className="text-xl font-bold border-pinterest focus:border-pinterest"
-                autoFocus
-              />
-              <Button onClick={handleUpdateName} variant="pinterest" size="sm">
-                Save
-              </Button>
-              <Button 
-                onClick={() => setIsEditingName(false)} 
-                variant="outline" 
-                size="sm"
+    <div className="flex-1 overflow-auto">
+      <div className="p-6 max-w-6xl mx-auto space-y-6">
+        {/* Header Section */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {isEditingName ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    className="text-xl font-bold"
+                    onBlur={handleUpdateName}
+                    onKeyPress={(e) => e.key === 'Enter' && handleUpdateName()}
+                    autoFocus
+                  />
+                  <Button size="sm" onClick={handleUpdateName}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <h1 
+                  className="text-3xl font-bold text-gradient cursor-pointer"
+                  onClick={() => {
+                    setIsEditingName(true);
+                    setEditedName(selectedTarget.name);
+                  }}
+                >
+                  {capitalizeWords(selectedTarget.name)}
+                </h1>
+              )}
+              <Badge 
+                variant={selectedTarget.isDone ? "secondary" : "default"}
+                className={cn(
+                  "text-xs",
+                  selectedTarget.isDone && "bg-green-100 text-green-800"
+                )}
               >
-                Cancel
-              </Button>
+                {selectedTarget.isDone ? "Completed" : "Active"}
+              </Badge>
             </div>
-          ) : (
-            <h2 
-              className="text-2xl font-bold cursor-pointer hover:text-pinterest transition-colors"
-              onClick={() => {
-                setEditedName(selectedTarget.name);
-                setIsEditingName(true);
-              }}
-            >
-              {capitalizeWords(selectedTarget.name)}
-            </h2>
-          )}
+          </div>
           
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={exportKeywords}>
-              <Download className="h-4 w-4" />
-              TXT
+          <div className="flex items-center gap-2">
+            <Select 
+              value={selectedTarget.priority} 
+              onValueChange={handleUpdatePriority}
+            >
+              <SelectTrigger className="w-32">
+                <div className={cn("flex items-center gap-2", getPriorityColor(selectedTarget.priority))}>
+                  {getPriorityIcon(selectedTarget.priority)}
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">
+                  <div className="flex items-center gap-2 text-green-500">
+                    <Flag className="h-4 w-4" />
+                    Low
+                  </div>
+                </SelectItem>
+                <SelectItem value="medium">
+                  <div className="flex items-center gap-2 text-yellow-500">
+                    <Flag className="h-4 w-4" />
+                    Medium
+                  </div>
+                </SelectItem>
+                <SelectItem value="high">
+                  <div className="flex items-center gap-2 text-red-500">
+                    <Flag className="h-4 w-4" />
+                    High
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant={selectedTarget.isDone ? "outline" : "default"}
+              onClick={handleToggleMainTargetDone}
+              className={cn(
+                "gap-2",
+                selectedTarget.isDone && "border-green-500 text-green-500 hover:bg-green-50"
+              )}
+            >
+              {selectedTarget.isDone ? (
+                <>
+                  <X className="h-4 w-4" />
+                  Reactivate
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  Mark Done
+                </>
+              )}
             </Button>
-            <Button variant="outline" size="sm" onClick={exportCSV}>
-              <Download className="h-4 w-4" />
-              CSV
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCompleted(!showCompleted)}
+              className="gap-2"
+            >
+              <Archive className="h-4 w-4" />
+              {showCompleted ? "Hide" : "Show"} Completed
             </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Badge variant="secondary">
-            {selectedTarget.relevantKeywords.length} relevant keywords
-          </Badge>
-          <span>•</span>
-          <span>Created {selectedTarget.createdAt.toLocaleDateString()}</span>
-          <span>•</span>
-          <span>Updated {selectedTarget.updatedAt.toLocaleDateString()}</span>
-        </div>
-      </div>
+        {/* Statistics Cards */}
+        {keywordStats && (
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+            <Card className="card-hover bg-gradient-to-br from-primary/5 to-accent/10 border-primary/20">
+              <CardContent className="p-4 text-center">
+                <BarChart3 className="h-6 w-6 text-primary mx-auto mb-2" />
+                <div className="text-xl font-bold text-primary">{keywordStats.totalKeywords}</div>
+                <div className="text-xs text-muted-foreground">Total Keywords</div>
+              </CardContent>
+            </Card>
 
-      {/* Content */}
-      <div className="flex-1 p-6 overflow-y-auto space-y-6">
-        {/* Analytics & Quick Insights */}
-        {keywordStats && keywordStats.totalKeywords > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Card className="card-hover bg-gradient-to-br from-pinterest/5 to-pinterest-red-dark/5 border-pinterest/20">
+            <Card className="card-hover bg-gradient-to-br from-blue-500/5 to-blue-600/10 border-blue-500/20">
               <CardContent className="p-4 text-center">
-                <BarChart3 className="h-6 w-6 text-pinterest mx-auto mb-2" />
-                <div className="text-xl font-bold text-pinterest">{keywordStats.totalKeywords}</div>
-                <div className="text-xs text-muted-foreground">Keywords</div>
+                <Target className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                <div className="text-xl font-bold text-blue-500">{keywordStats.activeKeywords}</div>
+                <div className="text-xs text-muted-foreground">Active</div>
               </CardContent>
             </Card>
-            
-            <Card className="card-hover bg-gradient-to-br from-success/5 to-success/10 border-success/20">
+
+            <Card className="card-hover bg-gradient-to-br from-green-500/5 to-green-600/10 border-green-500/20">
               <CardContent className="p-4 text-center">
-                <TrendingUp className="h-6 w-6 text-success mx-auto mb-2" />
-                <div className="text-xl font-bold text-success">{keywordStats.avgLength}</div>
-                <div className="text-xs text-muted-foreground">Avg. Length</div>
+                <Check className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                <div className="text-xl font-bold text-green-500">{keywordStats.completedKeywords}</div>
+                <div className="text-xs text-muted-foreground">Completed</div>
               </CardContent>
             </Card>
-            
-            <Card className="card-hover bg-gradient-to-br from-info/5 to-info/10 border-info/20">
+
+            <Card className="card-hover bg-gradient-to-br from-orange-500/5 to-orange-600/10 border-orange-500/20">
               <CardContent className="p-4 text-center">
-                <Clock className="h-6 w-6 text-info mx-auto mb-2" />
-                <div className="text-xl font-bold text-info">{keywordStats.daysActive}</div>
-                <div className="text-xs text-muted-foreground">Days Active</div>
+                <TrendingUp className="h-6 w-6 text-orange-500 mx-auto mb-2" />
+                <div className="text-xl font-bold text-orange-500">{keywordStats.completionRate}%</div>
+                <div className="text-xs text-muted-foreground">Completion</div>
               </CardContent>
             </Card>
-            
-            <Card className="card-hover bg-gradient-to-br from-warning/5 to-warning/10 border-warning/20">
+
+            <Card className="card-hover bg-gradient-to-br from-yellow-500/5 to-yellow-600/10 border-yellow-500/20">
               <CardContent className="p-4 text-center">
                 <Zap className="h-6 w-6 text-warning mx-auto mb-2" />
                 <div className="text-xl font-bold text-warning">{Math.ceil(keywordStats.totalKeywords / 10)}</div>
@@ -649,84 +775,86 @@ Use color scheme very much aligning with the recipe.`;
         )}
 
         {/* Add Keywords Section */}
-        <Card className="mb-6 gradient-aurora relative overflow-hidden">
-          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm"></div>
-          <CardHeader className="relative">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Plus className="h-5 w-5 text-pinterest" />
-              Add Keywords
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 relative">
-            {/* Single/Multiple Keywords Input */}
-            <div className="space-y-2">
-              <Textarea
-                placeholder="Enter relevant keywords (one per line or separated by commas)..."
-                value={newKeyword}
-                onChange={(e) => setNewKeyword(e.target.value)}
-                className="min-h-[100px] resize-none glass-card"
-              />
-              <Button 
-                onClick={handleAddSingleKeyword}
-                variant="pinterest"
-                disabled={!newKeyword.trim()}
-                className="w-full shadow-premium"
-              >
+        {!selectedTarget.isDone && (
+          <Card className="mb-6 gradient-aurora relative overflow-hidden">
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-sm"></div>
+            <CardHeader className="relative">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Plus className="h-5 w-5 text-pinterest" />
                 Add Keywords
-              </Button>
-            </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 relative">
+              {/* Single/Multiple Keywords Input */}
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Enter relevant keywords (one per line or separated by commas)..."
+                  value={newKeyword}
+                  onChange={(e) => setNewKeyword(e.target.value)}
+                  className="min-h-[100px] resize-none glass-card"
+                />
+                <Button 
+                  onClick={handleAddSingleKeyword}
+                  variant="pinterest"
+                  disabled={!newKeyword.trim()}
+                  className="w-full shadow-premium"
+                >
+                  Add Keywords
+                </Button>
+              </div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-2">
-              <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="glass-button">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Bulk Import
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Bulk Add Keywords</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Textarea
-                      placeholder="Paste your keywords here, one per line:&#10;vegan dinner ideas&#10;plant-based meals&#10;vegan desserts&#10;healthy vegan recipes"
-                      value={bulkKeywords}
-                      onChange={(e) => setBulkKeywords(e.target.value)}
-                      className="min-h-[200px] resize-none"
-                    />
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleBulkAdd}
-                        variant="pinterest"
-                        className="flex-1"
-                        disabled={!bulkKeywords.trim()}
-                      >
-                        Add Keywords
-                      </Button>
-                      <Button 
-                        onClick={() => setIsBulkDialogOpen(false)}
-                        variant="outline"
-                      >
-                        Cancel
-                      </Button>
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 gap-2">
+                <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="glass-button">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Bulk Import
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Bulk Add Keywords</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Textarea
+                        placeholder="Paste your keywords here, one per line:&#10;vegan dinner ideas&#10;plant-based meals&#10;vegan desserts&#10;healthy vegan recipes"
+                        value={bulkKeywords}
+                        onChange={(e) => setBulkKeywords(e.target.value)}
+                        className="min-h-[200px] resize-none"
+                      />
+                      <div className="flex gap-2">
+                        <Button 
+                          onClick={handleBulkAdd}
+                          variant="pinterest"
+                          className="flex-1"
+                          disabled={!bulkKeywords.trim()}
+                        >
+                          Add Keywords
+                        </Button>
+                        <Button 
+                          onClick={() => setIsBulkDialogOpen(false)}
+                          variant="outline"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
 
-              <KeywordTemplates onAddKeywords={handleAddFromTemplate} />
-            </div>
-          </CardContent>
-        </Card>
+                <KeywordTemplates onAddKeywords={handleAddFromTemplate} />
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Keywords List */}
         <Card className="scroll-indicator">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
-                Relevant Keywords
+                {showCompleted ? "All Keywords" : "Active Keywords"}
                 {selectedKeywords.length > 0 && (
                   <Badge variant="default" className="bg-pinterest text-white">
                     {selectedKeywords.length} selected
@@ -734,7 +862,7 @@ Use color scheme very much aligning with the recipe.`;
                 )}
               </CardTitle>
               <div className="flex items-center gap-2">
-                {selectedTarget.relevantKeywords.length > 1 && (
+                {displayedKeywords.length > 1 && (
                   <div className="flex items-center gap-2">
                     <Switch
                       checked={isDragMode}
@@ -746,20 +874,20 @@ Use color scheme very much aligning with the recipe.`;
                     </Label>
                   </div>
                 )}
-                {selectedTarget.relevantKeywords.length > 0 && (
+                {displayedKeywords.length > 0 && (
                   <div className="flex gap-1">
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={selectedKeywords.length === selectedTarget.relevantKeywords.length ? handleDeselectAll : handleSelectAll}
+                      onClick={selectedKeywords.length === displayedKeywords.length ? handleDeselectAll : handleSelectAll}
                       className="gap-1"
                     >
-                      {selectedKeywords.length === selectedTarget.relevantKeywords.length ? (
+                      {selectedKeywords.length === displayedKeywords.length ? (
                         <Square className="h-3 w-3" />
                       ) : (
                         <CheckSquare className="h-3 w-3" />
                       )}
-                      {selectedKeywords.length === selectedTarget.relevantKeywords.length ? 'Deselect' : 'Select'} All
+                      {selectedKeywords.length === displayedKeywords.length ? 'Deselect' : 'Select'} All
                     </Button>
                     <Button 
                       variant="outline" 
@@ -776,28 +904,30 @@ Use color scheme very much aligning with the recipe.`;
             </div>
           </CardHeader>
           <CardContent>
-            {selectedTarget.relevantKeywords.length > 0 ? (
+            {displayedKeywords.length > 0 ? (
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={selectedTarget.relevantKeywords}
+                  items={displayedKeywords.map(kw => kw.text)}
                   strategy={verticalListSortingStrategy}
                   disabled={!isDragMode}
                 >
                   <div className="space-y-2">
-                    {selectedTarget.relevantKeywords.map((keyword, index) => (
+                    {displayedKeywords.map((keyword, index) => (
                       <KeywordItem
-                        key={keyword}
-                        id={keyword}
-                        keyword={keyword}
+                        key={keyword.text}
+                        id={keyword.text}
+                        keyword={keyword.text}
                         index={index}
-                        isSelected={selectedKeywords.includes(keyword)}
+                        isSelected={selectedKeywords.includes(keyword.text)}
+                        isDone={keyword.isDone}
                         onEdit={handleEditKeyword}
                         onDelete={(kw) => onRemoveKeyword(selectedTarget.id, kw)}
                         onToggleSelect={handleToggleSelect}
+                        onToggleDone={(kw) => onToggleRelevantKeywordDone?.(selectedTarget.id, kw)}
                         isDragMode={isDragMode}
                       />
                     ))}
@@ -812,11 +942,18 @@ Use color scheme very much aligning with the recipe.`;
                     <Sparkles className="h-8 w-8 text-muted-foreground" />
                   </div>
                 </div>
-                <h4 className="font-medium mb-2">No Keywords Yet</h4>
+                <h4 className="font-medium mb-2">
+                  {showCompleted ? "No Keywords Found" : "No Active Keywords"}
+                </h4>
                 <p className="text-muted-foreground text-sm mb-4">
-                  Add some relevant keywords to get started with your Pinterest SEO strategy.
+                  {showCompleted 
+                    ? "This target doesn't have any keywords yet." 
+                    : "All keywords have been completed! Add new ones or show completed keywords."
+                  }
                 </p>
-                <KeywordTemplates onAddKeywords={handleAddFromTemplate} />
+                {!selectedTarget.isDone && (
+                  <KeywordTemplates onAddKeywords={handleAddFromTemplate} />
+                )}
               </div>
             )}
           </CardContent>
@@ -896,7 +1033,7 @@ Use color scheme very much aligning with the recipe.`;
         {/* Bulk Operations Floating Panel */}
         <BulkOperations
           selectedKeywords={selectedKeywords}
-          totalKeywords={selectedTarget.relevantKeywords.length}
+          totalKeywords={displayedKeywords.length}
           onSelectAll={handleSelectAll}
           onDeselectAll={handleDeselectAll}
           onDeleteSelected={handleDeleteSelected}
