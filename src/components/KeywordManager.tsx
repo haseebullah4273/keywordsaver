@@ -475,14 +475,11 @@ Related Keywords to use naturally:
 ${selectedTarget.relevantKeywords.map(kw => kw.text).join('\n')}
 
 Requirements:
-1. Each title should be under 100 characters
-2. Each description should be 2-3 sentences and under 500 characters
-3. Include relevant hashtags (8-12 per pin)
-4. Use emotional triggers and action words
-5. Target food enthusiasts and home cooks
-6. Include seasonal references where appropriate
-7. Add urgency and exclusivity phrases
-8. Make them click-worthy but not clickbait
+The Title should be catchy, include relevant long-tail keywords naturally, and stay under 70 characters. 
+
+The description must be 400-500 characters long, naturally incorporating 4-5 keywords while ensuring no word is repeated more than twice. Use bold text for keywords. 
+
+Add one emoji in title and one in description and all add CTA in description. Also add hashtags.
 
 Format each suggestion as:
 TITLE: [Title here]
