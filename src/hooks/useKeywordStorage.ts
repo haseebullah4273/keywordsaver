@@ -25,15 +25,20 @@ export const useKeywordStorage = () => {
             completedAt: target.completedAt ? new Date(target.completedAt) : undefined,
             // Migration: convert string arrays to RelevantKeyword objects
             relevantKeywords: Array.isArray(target.relevantKeywords) 
-              ? target.relevantKeywords.map((kw: any) => 
-                  typeof kw === 'string' 
-                    ? { text: kw, isDone: false }
-                    : {
-                        text: kw.text,
-                        isDone: kw.isDone ?? false,
-                        completedAt: kw.completedAt ? new Date(kw.completedAt) : undefined
-                      }
-                )
+              ? target.relevantKeywords.map((kw: any) => {
+                  if (typeof kw === 'string') {
+                    return { text: kw, isDone: false };
+                  } else if (kw && typeof kw === 'object' && kw.text) {
+                    return {
+                      text: kw.text,
+                      isDone: kw.isDone ?? false,
+                      completedAt: kw.completedAt ? new Date(kw.completedAt) : undefined
+                    };
+                  } else {
+                    console.error('Invalid keyword data:', kw);
+                    return { text: String(kw), isDone: false };
+                  }
+                })
               : []
           }));
           setData(parsed);
