@@ -514,7 +514,27 @@ Focus on recipe benefits, occasion-based targeting, and lifestyle aspirations.`;
       "Healthy",
       "Quick & Easy",
       "Family-Favorite",
-      "Instagram-Worthy"
+      "Instagram-Worthy",
+      "The Ultimate",
+      "Incredibly Delicious",
+      "Mouthwatering",
+      "Irresistible",
+      "Game-Changing",
+      "Foolproof",
+      "Mind-Blowing",
+      "Heavenly",
+      "Perfect Every Time",
+      "Crowd-Pleasing",
+      "Super Simple",
+      "Amazing",
+      "Absolutely Divine",
+      "Unforgettable",
+      "Best Ever",
+      "Comfort Food",
+      "Gourmet",
+      "Homemade",
+      "Fresh & Flavorful",
+      "Satisfying"
     ];
 
     const ctas = [
@@ -527,7 +547,27 @@ Focus on recipe benefits, occasion-based targeting, and lifestyle aspirations.`;
       "So Good!",
       "Easy Recipe",
       "Make Today",
-      "Yum Alert!"
+      "Yum Alert!",
+      "Cook This Tonight",
+      "Recipe Below ↓",
+      "Don't Miss This!",
+      "Perfect For Dinner",
+      "Weekend Treat",
+      "Family Approved",
+      "Quick Meal Solution",
+      "Food Heaven",
+      "Kitchen Magic",
+      "Taste Test This",
+      "Recipe Goals",
+      "Dinner Sorted!",
+      "Foodie Favorite",
+      "Cooking Made Easy",
+      "Recipe Winner",
+      "Must Make Recipe",
+      "Delicious Discovery",
+      "Cooking Inspiration",
+      "Recipe Perfection",
+      "Kitchen Success"
     ];
 
     const randomHook = hooks[Math.floor(Math.random() * hooks.length)];
