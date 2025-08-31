@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, Tag, Download, Upload, X, Sparkles, TrendingUp } from 'lucide-react';
+import { Plus, Search, Tag, Download, Upload, X, Sparkles, TrendingUp, Archive } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -18,6 +18,8 @@ interface KeywordSidebarProps {
   searchResults: Array<{ mainTarget: string; keyword: string; type: 'main' | 'relevant' }>;
   onExport: () => void;
   onImport: (data: any) => void;
+  onShowArchive: () => void;
+  archivedCount: number;
 }
 
 export const KeywordSidebar = ({
@@ -31,6 +33,8 @@ export const KeywordSidebar = ({
   searchResults,
   onExport,
   onImport,
+  onShowArchive,
+  archivedCount,
 }: KeywordSidebarProps) => {
   const [newTargetName, setNewTargetName] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -88,7 +92,7 @@ export const KeywordSidebar = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-4">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="pinterest" size="sm" className="flex-1">
@@ -137,6 +141,24 @@ export const KeywordSidebar = ({
             />
           </label>
         </div>
+
+        {/* Archive Button */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onShowArchive}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <Archive className="h-4 w-4" />
+            Archive
+          </div>
+          {archivedCount > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {archivedCount}
+            </Badge>
+          )}
+        </Button>
       </div>
 
       {/* Content */}

@@ -55,7 +55,6 @@ export const KeywordManager = ({
   const [editedName, setEditedName] = useState('');
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
   const [isDragMode, setIsDragMode] = useState(false);
-  const [showCompleted, setShowCompleted] = useState(false);
   const { toast } = useToast();
 
   const sensors = useSensors(
@@ -99,14 +98,11 @@ export const KeywordManager = ({
     };
   }, [selectedTarget]);
 
-  // Filter keywords based on completion status
+  // Filter keywords to show only active ones (completed keywords are in archive)
   const displayedKeywords = useMemo(() => {
     if (!selectedTarget) return [];
-    if (showCompleted) {
-      return selectedTarget.relevantKeywords;
-    }
     return selectedTarget.relevantKeywords.filter(kw => !kw.isDone);
-  }, [selectedTarget, showCompleted]);
+  }, [selectedTarget]);
 
   if (!selectedTarget) {
     return (
@@ -711,15 +707,6 @@ Use color scheme very much aligning with the recipe.`;
               )}
             </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCompleted(!showCompleted)}
-              className="gap-2"
-            >
-              <Archive className="h-4 w-4" />
-              {showCompleted ? "Hide" : "Show"} Completed
-            </Button>
           </div>
         </div>
 
@@ -891,7 +878,7 @@ Use color scheme very much aligning with the recipe.`;
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center gap-2">
-                {showCompleted ? "All Keywords" : "Active Keywords"}
+                Active Keywords
                 {selectedKeywords.length > 0 && (
                   <Badge variant="default" className="bg-pinterest text-white">
                     {selectedKeywords.length} selected
@@ -980,13 +967,10 @@ Use color scheme very much aligning with the recipe.`;
                   </div>
                 </div>
                 <h4 className="font-medium mb-2">
-                  {showCompleted ? "No Keywords Found" : "No Active Keywords"}
+                  No Active Keywords
                 </h4>
                 <p className="text-muted-foreground text-sm mb-4">
-                  {showCompleted 
-                    ? "This target doesn't have any keywords yet." 
-                    : "All keywords have been completed! Add new ones or show completed keywords."
-                  }
+                  All keywords have been completed! Check the archive or add new ones.
                 </p>
                 {!selectedTarget.isDone && (
                   <KeywordTemplates onAddKeywords={handleAddFromTemplate} />

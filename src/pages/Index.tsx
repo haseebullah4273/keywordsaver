@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { KeywordSidebar } from '@/components/KeywordSidebar';
 import { KeywordManager } from '@/components/KeywordManager';
+import { ArchiveManager } from '@/components/ArchiveManager';
 import { useKeywordStorage } from '@/hooks/useKeywordStorage';
 import { MainTarget } from '@/types/keyword';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +19,8 @@ const Index = () => {
     toggleMainTargetDone,
     toggleRelevantKeywordDone,
     searchKeywords,
+    getArchivedItems,
+    getActiveItems,
     exportData,
     importData,
   } = useKeywordStorage();
@@ -25,6 +28,7 @@ const Index = () => {
   const [selectedTarget, setSelectedTarget] = useState<MainTarget | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Array<{ mainTarget: string; keyword: string; type: 'main' | 'relevant' }>>([]);
+  const [showArchive, setShowArchive] = useState(false);
   const { toast } = useToast();
 
   // Update search results when query changes
@@ -39,23 +43,27 @@ const Index = () => {
 
   // Auto-select first target if none selected and targets exist
   useEffect(() => {
-    if (!selectedTarget && data.mainTargets.length > 0) {
-      setSelectedTarget(data.mainTargets[0]);
+    if (!selectedTarget && !showArchive) {
+      const activeItems = getActiveItems();
+      if (activeItems.mainTargets.length > 0) {
+        setSelectedTarget(activeItems.mainTargets[0]);
+      }
     }
-  }, [data.mainTargets, selectedTarget]);
+  }, [data.mainTargets, selectedTarget, showArchive, getActiveItems]);
 
   // Update selected target when data changes (to keep it in sync)
   useEffect(() => {
-    if (selectedTarget) {
-      const updatedTarget = data.mainTargets.find(t => t.id === selectedTarget.id);
+    if (selectedTarget && !showArchive) {
+      const activeItems = getActiveItems();
+      const updatedTarget = activeItems.mainTargets.find(t => t.id === selectedTarget.id);
       if (updatedTarget) {
         setSelectedTarget(updatedTarget);
       } else {
-        // Target was deleted
-        setSelectedTarget(data.mainTargets.length > 0 ? data.mainTargets[0] : null);
+        // Target was deleted or completed
+        setSelectedTarget(activeItems.mainTargets.length > 0 ? activeItems.mainTargets[0] : null);
       }
     }
-  }, [data.mainTargets, selectedTarget]);
+  }, [data.mainTargets, selectedTarget, showArchive, getActiveItems]);
 
   const handleAddTarget = (name: string) => {
     const newTarget = addMainTarget(name);
@@ -117,6 +125,27 @@ const Index = () => {
     }
   };
 
+  const handleShowArchive = () => {
+    setShowArchive(true);
+    setSelectedTarget(null);
+  };
+
+  const handleBackToActive = () => {
+    setShowArchive(false);
+    const activeItems = getActiveItems();
+    if (activeItems.mainTargets.length > 0) {
+      setSelectedTarget(activeItems.mainTargets[0]);
+    }
+  };
+
+  const handleReactivateMainTarget = (id: string) => {
+    toggleMainTargetDone(id);
+  };
+
+  const handleReactivateKeyword = (mainTargetId: string, keywordText: string) => {
+    toggleRelevantKeywordDone(mainTargetId, keywordText);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -128,29 +157,48 @@ const Index = () => {
     );
   }
 
+  const activeItems = getActiveItems();
+  const archivedItems = getArchivedItems();
+
   return (
     <div className="min-h-screen bg-background flex">
-      <KeywordSidebar
-        mainTargets={data.mainTargets}
-        selectedTarget={selectedTarget}
-        onSelectTarget={setSelectedTarget}
-        onAddTarget={handleAddTarget}
-        onDeleteTarget={handleDeleteTarget}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchResults={searchResults}
-        onExport={handleExport}
-        onImport={handleImport}
-      />
-      
-      <KeywordManager
-        selectedTarget={selectedTarget}
-        onAddKeywords={addRelevantKeywords}
-        onRemoveKeyword={removeRelevantKeyword}
-        onUpdateTarget={updateMainTarget}
-        onToggleMainTargetDone={toggleMainTargetDone}
-        onToggleRelevantKeywordDone={toggleRelevantKeywordDone}
-      />
+      {!showArchive ? (
+        <>
+          <KeywordSidebar
+            mainTargets={activeItems.mainTargets}
+            selectedTarget={selectedTarget}
+            onSelectTarget={setSelectedTarget}
+            onAddTarget={handleAddTarget}
+            onDeleteTarget={handleDeleteTarget}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchResults={searchResults}
+            onExport={handleExport}
+            onImport={handleImport}
+            onShowArchive={handleShowArchive}
+            archivedCount={archivedItems.mainTargets.length + archivedItems.relevantKeywords.length}
+          />
+          
+          <KeywordManager
+            selectedTarget={selectedTarget}
+            onAddKeywords={addRelevantKeywords}
+            onRemoveKeyword={removeRelevantKeyword}
+            onUpdateTarget={updateMainTarget}
+            onToggleMainTargetDone={toggleMainTargetDone}
+            onToggleRelevantKeywordDone={toggleRelevantKeywordDone}
+          />
+        </>
+      ) : (
+        <ArchiveManager
+          archivedMainTargets={archivedItems.mainTargets}
+          archivedKeywords={archivedItems.relevantKeywords}
+          onBack={handleBackToActive}
+          onReactivateMainTarget={handleReactivateMainTarget}
+          onReactivateKeyword={handleReactivateKeyword}
+          onDeleteMainTarget={deleteMainTarget}
+          onDeleteKeyword={removeRelevantKeyword}
+        />
+      )}
     </div>
   );
 };
