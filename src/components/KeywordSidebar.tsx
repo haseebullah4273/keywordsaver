@@ -63,15 +63,16 @@ const SortableItem = ({ target, index, selectedTarget, onSelectTarget, onDeleteT
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    zIndex: isDragging ? 50 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
-      style={{ animationDelay: `${index * 100}ms`, ...style }}
+      style={style}
       className={cn(
-        "card-hover p-4 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden fade-in",
-        isDragging && "opacity-50 z-50",
+        "card-hover p-4 rounded-xl cursor-pointer transition-all duration-200 group relative overflow-hidden",
+        isDragging && "opacity-90 shadow-2xl scale-105",
         target.isDone 
           ? selectedTarget?.id === target.id
             ? "bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-sm dark:from-green-900/20 dark:to-green-800/20 dark:border-green-700/50"
@@ -94,7 +95,8 @@ const SortableItem = ({ target, index, selectedTarget, onSelectTarget, onDeleteT
           <div 
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 -ml-1 hover:bg-accent/50 rounded"
+            className="cursor-grab active:cursor-grabbing p-1 -ml-1 hover:bg-accent/50 rounded transition-colors"
+            onClick={(e) => e.stopPropagation()}
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>
@@ -177,7 +179,11 @@ export const KeywordSidebar = ({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
