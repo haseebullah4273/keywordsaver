@@ -192,11 +192,13 @@ export const KeywordSidebar = ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
+    if (active.id !== over?.id && over) {
       const oldIndex = mainTargets.findIndex((target) => target.id === active.id);
-      const newIndex = mainTargets.findIndex((target) => target.id === over?.id);
+      const newIndex = mainTargets.findIndex((target) => target.id === over.id);
       
-      onReorderTargets(oldIndex, newIndex);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        onReorderTargets(oldIndex, newIndex);
+      }
     }
   };
 

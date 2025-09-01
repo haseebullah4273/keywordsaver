@@ -86,6 +86,21 @@ const Index = () => {
     });
   };
 
+  const handleReorderTargets = (oldIndex: number, newIndex: number) => {
+    // Only reorder if we're working with active items
+    const activeItems = getActiveItems();
+    if (oldIndex >= 0 && newIndex >= 0 && oldIndex < activeItems.mainTargets.length && newIndex < activeItems.mainTargets.length) {
+      // Find the actual indices in the full data array
+      const activeTarget1 = activeItems.mainTargets[oldIndex];
+      const activeTarget2 = activeItems.mainTargets[newIndex];
+      
+      const fullOldIndex = data.mainTargets.findIndex(t => t.id === activeTarget1.id);
+      const fullNewIndex = data.mainTargets.findIndex(t => t.id === activeTarget2.id);
+      
+      reorderMainTargets(fullOldIndex, fullNewIndex);
+    }
+  };
+
   const handleExport = () => {
     const exportedData = exportData();
     const dataStr = JSON.stringify(exportedData, null, 2);
@@ -171,7 +186,7 @@ const Index = () => {
             onSelectTarget={setSelectedTarget}
             onAddTarget={handleAddTarget}
             onDeleteTarget={handleDeleteTarget}
-            onReorderTargets={reorderMainTargets}
+            onReorderTargets={handleReorderTargets}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             searchResults={searchResults}
