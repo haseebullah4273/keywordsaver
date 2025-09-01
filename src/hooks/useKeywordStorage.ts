@@ -233,6 +233,15 @@ export const useKeywordStorage = () => {
     };
   };
 
+  const reorderMainTargets = (oldIndex: number, newIndex: number) => {
+    const newData = { ...data };
+    const [reorderedItem] = newData.mainTargets.splice(oldIndex, 1);
+    newData.mainTargets.splice(newIndex, 0, reorderedItem);
+    
+    setData(newData);
+    saveData(newData);
+  };
+
   const exportData = () => {
     return data;
   };
@@ -254,6 +263,7 @@ export const useKeywordStorage = () => {
     searchKeywords,
     getArchivedItems,
     getActiveItems,
+    reorderMainTargets,
     exportData,
     importData,
   };

@@ -21,6 +21,7 @@ const Index = () => {
     searchKeywords,
     getArchivedItems,
     getActiveItems,
+    reorderMainTargets,
     exportData,
     importData,
   } = useKeywordStorage();
@@ -170,6 +171,7 @@ const Index = () => {
             onSelectTarget={setSelectedTarget}
             onAddTarget={handleAddTarget}
             onDeleteTarget={handleDeleteTarget}
+            onReorderTargets={reorderMainTargets}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             searchResults={searchResults}

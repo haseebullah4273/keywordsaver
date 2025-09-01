@@ -1,5 +1,24 @@
 import { useState } from 'react';
-import { Plus, Search, Tag, Download, Upload, X, Sparkles, TrendingUp, Archive } from 'lucide-react';
+import { Plus, Search, Tag, Download, Upload, X, Sparkles, TrendingUp, Archive, GripVertical } from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,6 +32,7 @@ interface KeywordSidebarProps {
   onSelectTarget: (target: MainTarget) => void;
   onAddTarget: (name: string) => void;
   onDeleteTarget: (id: string) => void;
+  onReorderTargets: (oldIndex: number, newIndex: number) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   searchResults: Array<{ mainTarget: string; keyword: string; type: 'main' | 'relevant' }>;
@@ -22,12 +42,129 @@ interface KeywordSidebarProps {
   archivedCount: number;
 }
 
+interface SortableItemProps {
+  target: MainTarget;
+  index: number;
+  selectedTarget: MainTarget | null;
+  onSelectTarget: (target: MainTarget) => void;
+  onDeleteTarget: (id: string) => void;
+}
+
+const SortableItem = ({ target, index, selectedTarget, onSelectTarget, onDeleteTarget }: SortableItemProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: target.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ animationDelay: `${index * 100}ms`, ...style }}
+      className={cn(
+        "card-hover p-4 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden fade-in",
+        isDragging && "opacity-50 z-50",
+        target.isDone 
+          ? selectedTarget?.id === target.id
+            ? "bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-sm dark:from-green-900/20 dark:to-green-800/20 dark:border-green-700/50"
+            : "bg-gradient-to-r from-muted/50 to-muted/30 border border-border/30 hover:border-green-300/50 opacity-75"
+          : selectedTarget?.id === target.id
+            ? "bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 border-pinterest/50 shadow-elegant"
+            : "bg-gradient-to-r from-card to-accent/30 border border-border/50 hover:border-pinterest/30"
+      )}
+      onClick={() => onSelectTarget(target)}
+    >
+      {selectedTarget?.id === target.id && !target.isDone && (
+        <div className="absolute inset-0 bg-gradient-to-r from-pinterest/5 to-transparent opacity-50"></div>
+      )}
+      {selectedTarget?.id === target.id && target.isDone && (
+        <div className="absolute inset-0 bg-gradient-to-r from-green-100/50 to-transparent opacity-50 dark:from-green-800/30"></div>
+      )}
+      
+      <div className="relative flex items-center justify-between">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div 
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-1 -ml-1 hover:bg-accent/50 rounded"
+          >
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </div>
+          
+          <div className={cn(
+            "w-3 h-3 rounded-full transition-colors",
+            target.isDone
+              ? "bg-green-500"
+              : selectedTarget?.id === target.id 
+                ? "bg-pinterest" 
+                : "bg-muted-foreground/40"
+          )}></div>
+          
+          <div className="flex-1 min-w-0">
+            <h4 className={cn(
+              "font-semibold text-sm truncate transition-colors",
+              target.isDone
+                ? "text-green-700 dark:text-green-400 line-through"
+                : selectedTarget?.id === target.id 
+                  ? "text-pinterest" 
+                  : "text-foreground"
+            )}>
+              {capitalizeWords(target.name)}
+            </h4>
+            
+            <div className="flex items-center gap-2 mt-1">
+              <Badge 
+                variant={target.isDone ? "secondary" : target.relevantKeywords.length > 10 ? "default" : "secondary"} 
+                className={cn(
+                  "text-xs",
+                  target.isDone && "bg-green-100 text-green-700 dark:bg-green-800/30 dark:text-green-400"
+                )}
+              >
+                {target.relevantKeywords.length} keywords
+              </Badge>
+              {target.isDone && (
+                <Badge className="text-xs bg-green-500 text-white">
+                  ✓ Done
+                </Badge>
+              )}
+              {!target.isDone && target.relevantKeywords.length > 20 && (
+                <TrendingUp className="h-3 w-3 text-success" />
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          className="opacity-0 group-hover:opacity-100 transition-all duration-200 h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteTarget(target.id);
+          }}
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export const KeywordSidebar = ({
   mainTargets,
   selectedTarget,
   onSelectTarget,
   onAddTarget,
   onDeleteTarget,
+  onReorderTargets,
   searchQuery,
   onSearchChange,
   searchResults,
@@ -38,6 +175,24 @@ export const KeywordSidebar = ({
 }: KeywordSidebarProps) => {
   const [newTargetName, setNewTargetName] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = mainTargets.findIndex((target) => target.id === active.id);
+      const newIndex = mainTargets.findIndex((target) => target.id === over?.id);
+      
+      onReorderTargets(oldIndex, newIndex);
+    }
+  };
 
   const handleAddTarget = () => {
     if (newTargetName.trim()) {
@@ -194,113 +349,49 @@ export const KeywordSidebar = ({
             <h3 className="font-medium mb-3 text-sm text-muted-foreground">
               Main Targets ({mainTargets.length})
             </h3>
-            <div className="space-y-3">
-              {mainTargets.map((target, index) => (
-                <div
-                  key={target.id}
-                  className={cn(
-                    "card-hover p-4 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden fade-in",
-                    target.isDone 
-                      ? selectedTarget?.id === target.id
-                        ? "bg-gradient-to-r from-green-50 to-green-100 border-green-200 shadow-sm dark:from-green-900/20 dark:to-green-800/20 dark:border-green-700/50"
-                        : "bg-gradient-to-r from-muted/50 to-muted/30 border border-border/30 hover:border-green-300/50 opacity-75"
-                      : selectedTarget?.id === target.id
-                        ? "bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 border-pinterest/50 shadow-elegant"
-                        : "bg-gradient-to-r from-card to-accent/30 border border-border/50 hover:border-pinterest/30"
-                  )}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                  onClick={() => onSelectTarget(target)}
+            <DndContext 
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={mainTargets.map(target => target.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-3">
+                  {mainTargets.map((target, index) => (
+                    <SortableItem
+                      key={target.id}
+                      target={target}
+                      index={index}
+                      selectedTarget={selectedTarget}
+                      onSelectTarget={onSelectTarget}
+                      onDeleteTarget={onDeleteTarget}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+            {mainTargets.length === 0 && (
+              <div className="text-center py-12">
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 rounded-full blur-lg"></div>
+                  <div className="relative bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 p-6 rounded-full w-fit mx-auto">
+                    <Sparkles className="h-8 w-8 text-pinterest" />
+                  </div>
+                </div>
+                <h4 className="font-semibold mb-2">Start Your Pinterest Journey</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create your first main target keyword to begin organizing your Pinterest SEO strategy.
+                </p>
+                <Button 
+                  variant="pinterest" 
+                  size="sm"
+                  onClick={() => setIsAddDialogOpen(true)}
+                  className="btn-elegant"
                 >
-                  {selectedTarget?.id === target.id && !target.isDone && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-pinterest/5 to-transparent opacity-50"></div>
-                  )}
-                  {selectedTarget?.id === target.id && target.isDone && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-100/50 to-transparent opacity-50 dark:from-green-800/30"></div>
-                  )}
-                  
-                  <div className="relative flex items-center justify-between">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className={cn(
-                        "w-3 h-3 rounded-full transition-colors",
-                        target.isDone
-                          ? "bg-green-500"
-                          : selectedTarget?.id === target.id 
-                            ? "bg-pinterest" 
-                            : "bg-muted-foreground/40"
-                      )}></div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <h4 className={cn(
-                          "font-semibold text-sm truncate transition-colors",
-                          target.isDone
-                            ? "text-green-700 dark:text-green-400 line-through"
-                            : selectedTarget?.id === target.id 
-                              ? "text-pinterest" 
-                              : "text-foreground"
-                        )}>
-                          {capitalizeWords(target.name)}
-                        </h4>
-                        
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge 
-                            variant={target.isDone ? "secondary" : target.relevantKeywords.length > 10 ? "default" : "secondary"} 
-                            className={cn(
-                              "text-xs",
-                              target.isDone && "bg-green-100 text-green-700 dark:bg-green-800/30 dark:text-green-400"
-                            )}
-                          >
-                            {target.relevantKeywords.length} keywords
-                          </Badge>
-                          {target.isDone && (
-                            <Badge className="text-xs bg-green-500 text-white">
-                              ✓ Done
-                            </Badge>
-                          )}
-                          {!target.isDone && target.relevantKeywords.length > 20 && (
-                            <TrendingUp className="h-3 w-3 text-success" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-all duration-200 h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteTarget(target.id);
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {mainTargets.length === 0 && (
-                <div className="text-center py-12">
-                  <div className="relative mb-4">
-                    <div className="absolute inset-0 bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 rounded-full blur-lg"></div>
-                    <div className="relative bg-gradient-to-r from-pinterest/10 to-pinterest-red-dark/10 p-6 rounded-full w-fit mx-auto">
-                      <Sparkles className="h-8 w-8 text-pinterest" />
-                    </div>
-                  </div>
-                  <h4 className="font-semibold mb-2">Start Your Pinterest Journey</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Create your first main target keyword to begin organizing your Pinterest SEO strategy.
-                  </p>
-                  <Button 
-                    variant="pinterest" 
-                    size="sm"
-                    onClick={() => setIsAddDialogOpen(true)}
-                    className="btn-elegant"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Your First Target
-                  </Button>
-                </div>
-              )}
-            </div>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Target
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
