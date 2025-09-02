@@ -501,119 +501,103 @@ Focus on recipe benefits, occasion-based targeting, and lifestyle aspirations.`;
 
   const handleGenerateImagePrompt = async () => {
     const hooks = [
-      "Secret To Perfect", "Believe How Easy", "5-Minute Magic", "One-Bowl Wonder",
-      "No-Fail Method", "Restaurant-Style", "Healthy Twist", "Quick & Easy",
-      "Family-Favorite", "Instagram-Worthy", "Ultimate Guide", "Incredibly Delicious",
-      "Mouthwatering", "Irresistible", "Game-Changing", "Foolproof Recipe",
-      "Mind-Blowing", "Heavenly Taste", "Perfect Every Time", "Crowd-Pleasing",
-      "Super Simple", "Amazing Results", "Absolutely Divine", "Unforgettable",
-      "Best Ever", "Comfort Food", "Gourmet Style", "Homemade Magic",
-      "Fresh & Flavorful", "Satisfying", "Easy Peasy", "Kitchen Hack",
-      "Pro Chef Secret", "Time-Saving", "Budget-Friendly", "Zero-Stress"
+      "SO CREAMY & RICH!", "INCREDIBLY EASY!", "5-MINUTE MAGIC!", "ONE-BOWL WONDER!",
+      "NO-FAIL METHOD!", "RESTAURANT-STYLE!", "HEALTHY & FRESH!", "QUICK & DELICIOUS!",
+      "FAMILY-FAVORITE!", "INSTAGRAM-WORTHY!", "ULTIMATE COMFORT!", "INCREDIBLY TASTY!",
+      "MOUTHWATERING!", "IRRESISTIBLE!", "GAME-CHANGING!", "FOOLPROOF RECIPE!",
+      "MIND-BLOWING!", "HEAVENLY TASTE!", "PERFECT EVERY TIME!", "CROWD-PLEASING!",
+      "SUPER SIMPLE!", "AMAZING RESULTS!", "ABSOLUTELY DIVINE!", "UNFORGETTABLE!",
+      "BEST EVER!", "COMFORT FOOD!", "GOURMET STYLE!", "HOMEMADE MAGIC!",
+      "FRESH & FLAVORFUL!", "SO SATISFYING!", "EASY PEASY!", "KITCHEN HACK!",
+      "PRO CHEF SECRET!", "TIME-SAVING!", "BUDGET-FRIENDLY!", "ZERO-STRESS!"
     ];
 
     const ctas = [
-      "Get Recipe Now", "Try This Today", "Save For Later", "Pin To Cook",
-      "Recipe Inside", "Must Try This", "So Delicious", "Easy Recipe",
-      "Make Tonight", "Yum Alert", "Cook This Now", "Recipe Below",
-      "Don't Miss Out", "Perfect Dinner", "Weekend Treat", "Family Approved",
-      "Quick Solution", "Food Heaven", "Kitchen Magic", "Taste Test Now",
-      "Recipe Goals", "Dinner Sorted", "Foodie Favorite", "Cooking Made Easy",
-      "Recipe Winner", "Must Make", "Delicious Discovery", "Cooking Inspiration",
-      "Recipe Perfect", "Kitchen Success", "Flavor Bomb", "Taste Amazing"
-    ];
-
-    const layouts = [
-      "vertical split with top and bottom images",
-      "diagonal split creating dynamic composition", 
-      "overlapping images with one slightly offset",
-      "side-by-side images with seamless blend",
-      "layered collage with depth effect"
-    ];
-
-    const overlayStyles = [
-      "elegant semi-transparent overlay with subtle gradient",
-      "bold solid color block with rounded corners",
-      "vintage-style banner with decorative borders",
-      "modern minimalist rectangle with drop shadow",
-      "artistic brush stroke background effect",
-      "clean geometric shape with soft edges"
+      "TAP FOR THE FULL RECIPE!", "GET THE RECIPE NOW!", "TRY THIS TODAY!", "SAVE FOR LATER!",
+      "PIN TO COOK LATER!", "RECIPE INSIDE!", "MUST TRY THIS!", "SO DELICIOUS!",
+      "MAKE IT TONIGHT!", "YUM ALERT!", "COOK THIS NOW!", "RECIPE BELOW!",
+      "DON'T MISS OUT!", "PERFECT FOR DINNER!", "WEEKEND TREAT!", "FAMILY APPROVED!",
+      "QUICK MEAL SOLUTION!", "FOOD HEAVEN!", "KITCHEN MAGIC!", "TASTE TEST NOW!",
+      "RECIPE GOALS!", "DINNER SORTED!", "FOODIE FAVORITE!", "COOKING MADE EASY!",
+      "RECIPE WINNER!", "MUST MAKE THIS!", "DELICIOUS DISCOVERY!", "COOKING INSPIRATION!",
+      "RECIPE PERFECTION!", "KITCHEN SUCCESS!", "FLAVOR BOMB!", "TASTE AMAZING!"
     ];
 
     const colorSchemes = [
-      "warm earth tones (terracotta, cream, sage green)",
-      "fresh and vibrant (coral, mint, golden yellow)",
-      "elegant neutrals (charcoal, ivory, soft beige)",
-      "rich and cozy (burgundy, cream, deep orange)",
-      "modern pastels (blush pink, sage, warm white)",
-      "rustic charm (forest green, cream, burnt orange)"
+      "warm orange and brown tones with cream accents (like lasagna)",
+      "fresh green and white with natural wood tones",
+      "rich red and burgundy with golden highlights",
+      "elegant navy blue and cream with gold accents", 
+      "warm terracotta and sage green with ivory",
+      "deep purple and lavender with soft gray",
+      "coral and peach with warm cream tones",
+      "forest green and cream with rustic brown",
+      "soft pink and cream with gold details",
+      "charcoal gray and white with bright accent color"
     ];
 
     const textStyles = [
-      "modern sans-serif with varying weights",
-      "elegant serif with script accent",
-      "bold condensed with handwritten CTA",
-      "clean geometric with decorative elements",
-      "rustic hand-lettered with modern touches",
-      "sophisticated typography with gold accents"
-    ];
-
-    const additionalElements = [
-      "subtle food icons or illustrations",
-      "delicate botanical elements",
-      "geometric patterns in corners",
-      "watercolor splash effects",
-      "minimal line art decorations",
-      "soft texture overlays"
+      "bold sans-serif for hook, clean serif for main title, simple sans-serif for CTA",
+      "condensed bold for hook, elegant script for main title, clean modern for CTA", 
+      "thick display font for hook, sophisticated serif for main title, handwritten for CTA",
+      "modern geometric for hook, classic serif for main title, rounded sans-serif for CTA",
+      "rustic slab serif for hook, refined serif for main title, casual script for CTA"
     ];
 
     // Generate random selections
     const randomHook = hooks[Math.floor(Math.random() * hooks.length)];
     const randomCta = ctas[Math.floor(Math.random() * ctas.length)];
-    const randomLayout = layouts[Math.floor(Math.random() * layouts.length)];
-    const randomOverlayStyle = overlayStyles[Math.floor(Math.random() * overlayStyles.length)];
     const randomColorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
     const randomTextStyle = textStyles[Math.floor(Math.random() * textStyles.length)];
-    const randomElements = additionalElements[Math.floor(Math.random() * additionalElements.length)];
 
-    const imagePrompt = `Create a stunning Pinterest pin collage for "${capitalizeWords(selectedTarget.name)}" with these specifications:
+    const imagePrompt = `Create a Pinterest pin exactly like this reference style for "${capitalizeWords(selectedTarget.name)}":
 
-LAYOUT & COMPOSITION:
-- Create a ${randomLayout}
-- Use two high-quality, appetizing food images that complement each other
-- Ensure perfect aspect ratio for Pinterest (2:3 or 1000x1500 pixels)
+LAYOUT STRUCTURE (Copy this exact format):
+- Two high-quality food images: one on top, one on bottom
+- Central text overlay spanning across both images
+- Pinterest aspect ratio (2:3 or 1000x1500 pixels)
 
-OVERLAY TEXT DESIGN:
-- Position: Centered overlay with ${randomOverlayStyle}
-- TOP TEXT: "${randomHook}" (3-4 words, attention-grabbing hook)
-- CENTER TEXT: "${capitalizeWords(selectedTarget.name)}" (main keyword, largest and most prominent)
-- BOTTOM TEXT: "${randomCta}" (3-5 words, compelling call-to-action)
+TEXT OVERLAY (3-part structure):
+- TOP TEXT: "${randomHook}" 
+  - Bold, attention-grabbing hook text
+  - Smaller than main title but prominent
+  - All caps for impact
+  
+- MAIN TITLE: "${capitalizeWords(selectedTarget.name).toUpperCase()}"
+  - Largest text element, center focus
+  - Bold, easy to read font
+  - Most prominent part of the design
+  
+- BOTTOM TEXT: "${randomCta}"
+  - Call-to-action text
+  - Medium size, clear and readable
+  - Action-oriented language
 
-VISUAL STYLING:
-- Typography: ${randomTextStyle}
-- Color Palette: ${randomColorScheme}
-- Add ${randomElements}
-- Ensure excellent contrast for text readability
-- Include subtle shadows and depth for professional finish
+VISUAL DESIGN:
+- Color scheme: ${randomColorScheme}
+- Typography style: ${randomTextStyle}
+- Semi-transparent overlay background for text readability
+- Text should have perfect contrast against background
+- Clean, professional Pinterest pin aesthetic
 
-TECHNICAL REQUIREMENTS:
-- Ultra-high resolution and crisp details
-- Food photography should look fresh, appetizing, and professionally shot
-- Perfect lighting with natural shadows
-- Cohesive color harmony throughout the design
-- Mobile-optimized readability
+FOOD PHOTOGRAPHY:
+- Top image: Close-up hero shot of the finished dish
+- Bottom image: Cross-section or different angle showing texture/layers
+- Both images should be appetizing, well-lit, and high resolution
+- Images should complement each other and the color scheme
 
-MOOD & AESTHETICS:
-- Evoke appetite appeal and desire to try the recipe
-- Balance of sophistication and approachability
-- Instagram and Pinterest-worthy visual appeal
-- Clean, uncluttered composition with strategic white space`;
+TECHNICAL SPECS:
+- Ultra-high resolution for crisp details
+- Professional food photography lighting
+- Clean composition with strategic white space
+- Mobile-optimized text readability
+- Pinterest-ready format and proportions`;
 
     try {
       await navigator.clipboard.writeText(imagePrompt);
       toast({
-        title: "Advanced Image Prompt Generated",
-        description: "Detailed Pinterest pin collage prompt has been copied to clipboard.",
+        title: "Pinterest Pin Prompt Generated",
+        description: "Detailed pin prompt matching your reference style has been copied to clipboard.",
       });
     } catch (error) {
       toast({
