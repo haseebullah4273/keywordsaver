@@ -499,6 +499,78 @@ Focus on recipe benefits, occasion-based targeting, and lifestyle aspirations.`;
     }
   };
 
+  const handleGeneratePinPowerPrompt = async () => {
+    const pinPowerPrompt = `Act as a Headline Expert who understands both the core topic and various potential audience segments.
+
+Your task is to take a single source headline and transform it into multiple targeted headlines.
+
+Each new headline should appeal to a different audience while maintaining the main theme of the original topic.
+
+For example if the topic is "15 Back To School Outfit Ideas"
+
+There are many different audiences that can be targeted by using the same seed keyword and targeting different interests of people.
+
+For example for above keyword we can make titles like:
+
+15 Back to School Outfit Ideas Every Teen Will Love This Year
+(Targeting a general teen audience)
+
+15 Affordable Back to School Outfits Under $X – Stylish on a Budget
+(Targeting budget-conscious shoppers)
+
+15 Comfy and Trendy Back to School Looks for Busy Mornings
+(Targeting parents or students who need quick, comfortable outfits)
+
+15 Fashionable Back to School Outfits for High School Seniors
+(Targeting senior students looking to make a statement)
+
+15 Cute and Kid-Approved Back to School Outfits for Little Ones
+(Targeting parents of younger children)
+
+15 Back to School Outfits Perfect for Active Kids On the Go
+(Targeting parents of active children)
+
+15 Smart-Casual Back to School Outfit Ideas for College Students
+(Targeting college students wanting a polished yet casual look)
+
+15 Eco-Friendly Back to School Outfits – Sustainable Fashion Picks
+(Targeting eco-conscious shoppers)
+
+15 Plus-Size Back to School Outfit Ideas That Are Chic and Comfy
+(Targeting plus-size teens and young adults)
+
+15 Preppy Back to School Outfit Ideas for a Polished Look
+(Targeting preppy fashion enthusiasts)
+
+15 Trendy Back to School Outfit Ideas Inspired by Celebrities
+(Targeting fashion-forward teens who follow celebrity style)
+
+15 Athletic-Inspired Back to School Outfits for a Sporty Look
+(Targeting students who prefer athletic or casual sporty styles)
+
+Now, using this approach, please create variations on the headline "${capitalizeWords(selectedTarget.name)} Recipe" targeting different audiences. Provide a brief explanation for each variation, describing the specific audience it targets. Keep each headline under 70 characters. 
+
+The description must be 400-500 characters long, naturally incorporating 4-5 keywords while ensuring no word is repeated more than twice. Use bold text for keywords. 
+
+Add one emoji in title and one in description and all add CTA in description. Also, add atleast 5 hashtags. Here are some relevant keywords to add:
+
+${selectedTarget.relevantKeywords.map(kw => kw.text).join(', ')}`;
+
+    try {
+      await navigator.clipboard.writeText(pinPowerPrompt);
+      toast({
+        title: "Pin Power Prompt Generated",
+        description: "Headline targeting prompt has been copied to clipboard.",
+      });
+    } catch (error) {
+      toast({
+        title: "Copy Failed",
+        description: "Failed to copy prompt to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleGenerateImagePrompt = async () => {
     const hooks = [
       "SO CREAMY & RICH!", "INCREDIBLY EASY!", "5-MINUTE MAGIC!", "ONE-BOWL WONDER!",
@@ -999,7 +1071,7 @@ TECHNICAL SPECS:
 
         {/* Content Generation Section */}
         {selectedTarget && (
-          <div className="grid md:grid-cols-3 gap-6 mt-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
             {/* SEO Article Prompt Generator */}
             <div className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-2xl shadow-card">
               <div className="flex items-center gap-3 mb-4">
@@ -1063,6 +1135,28 @@ TECHNICAL SPECS:
               >
                 <Lightbulb className="h-4 w-4 mr-2" />
                 Generate Image Prompt
+              </Button>
+            </div>
+
+            {/* Pin Power Pin Prompt */}
+            <div className="p-6 bg-gradient-to-br from-purple-500/5 to-violet-500/5 border border-purple-500/20 rounded-2xl shadow-card">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl bg-purple-500/10">
+                  <Zap className="h-5 w-5 text-purple-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-purple-500">
+                  Pin Power Pin Prompt
+                </h3>
+              </div>
+              <p className="text-muted-foreground mb-4 text-sm">
+                Generate targeted headline variations for different audiences using your recipe keywords.
+              </p>
+              <Button
+                onClick={handleGeneratePinPowerPrompt}
+                className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-500/90 hover:to-violet-500/90 text-white shadow-glow transition-all duration-300"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Generate Pin Power Prompt
               </Button>
             </div>
           </div>
