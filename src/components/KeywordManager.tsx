@@ -622,48 +622,15 @@ ${selectedTarget.relevantKeywords.map(kw => kw.text).join(', ')}`;
     const randomColorScheme = colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
     const randomTextStyle = textStyles[Math.floor(Math.random() * textStyles.length)];
 
-    const imagePrompt = `Create a Pinterest pin exactly like this reference style for "${capitalizeWords(selectedTarget.name)}":
+    const imagePrompt = `Make a compelling and attractive Pinterest Pin on the topic "${capitalizeWords(selectedTarget.name)}". Make a collage of two images one on top and one on bottom and there is a text written in the center with solid color background which consist three parts: 
 
-LAYOUT STRUCTURE (Copy this exact format):
-- Two high-quality food images: one on top, one on bottom
-- Central text overlay spanning across both images
-- Pinterest aspect ratio (2:3 or 1000x1500 pixels)
+first line contains:"${randomHook}" in simple and bold and compelling text. 
 
-TEXT OVERLAY (3-part structure):
-- TOP TEXT: "${randomHook}" 
-  - Bold, attention-grabbing hook text
-  - Smaller than main title but prominent
-  - All caps for impact
-  
-- MAIN TITLE: "${capitalizeWords(selectedTarget.name).toUpperCase()}"
-  - Largest text element, center focus
-  - Bold, easy to read font
-  - Most prominent part of the design
-  
-- BOTTOM TEXT: "${randomCta}"
-  - Call-to-action text
-  - Medium size, clear and readable
-  - Action-oriented language
+second line contains: "${capitalizeWords(selectedTarget.name)} Recipe" in larger text and noticeable font, 
 
-VISUAL DESIGN:
-- Color scheme: ${randomColorScheme}
-- Typography style: ${randomTextStyle}
-- Semi-transparent overlay background for text readability
-- Text should have perfect contrast against background
-- Clean, professional Pinterest pin aesthetic
+third line contains: "${randomCta}" in handwritting font but liitle smaller the second line.
 
-FOOD PHOTOGRAPHY:
-- Top image: Close-up hero shot of the finished dish
-- Bottom image: Cross-section or different angle showing texture/layers
-- Both images should be appetizing, well-lit, and high resolution
-- Images should complement each other and the color scheme
-
-TECHNICAL SPECS:
-- Ultra-high resolution for crisp details
-- Professional food photography lighting
-- Clean composition with strategic white space
-- Mobile-optimized text readability
-- Pinterest-ready format and proportions`;
+ Use color scheme very much aligning with the recipe.`;
 
     try {
       await navigator.clipboard.writeText(imagePrompt);
