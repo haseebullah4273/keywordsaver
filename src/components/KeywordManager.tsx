@@ -1131,10 +1131,10 @@ TECHNICAL SPECS:
               </p>
               <Button
                 onClick={handleGenerateImagePrompt}
-                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-500/90 hover:to-amber-500/90 text-white shadow-glow transition-all duration-300"
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-500/90 hover:to-amber-500/90 text-white shadow-glow transition-all duration-300 min-h-[2.5rem] h-auto py-2 px-3"
               >
-                <Lightbulb className="h-4 w-4 mr-2" />
-                Generate Image Prompt
+                <Lightbulb className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="break-words text-center leading-tight">Generate Image Prompt</span>
               </Button>
             </div>
 
@@ -1153,10 +1153,10 @@ TECHNICAL SPECS:
               </p>
               <Button
                 onClick={handleGeneratePinPowerPrompt}
-                className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-500/90 hover:to-violet-500/90 text-white shadow-glow transition-all duration-300"
+                className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-500/90 hover:to-violet-500/90 text-white shadow-glow transition-all duration-300 min-h-[2.5rem] h-auto py-2 px-3"
               >
-                <Zap className="h-4 w-4 mr-2" />
-                Generate Pin Power Prompt
+                <Zap className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="break-words text-center leading-tight">Generate Pin Power Prompt</span>
               </Button>
             </div>
           </div>
