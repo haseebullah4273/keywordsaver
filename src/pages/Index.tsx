@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { KeywordSidebar } from '@/components/KeywordSidebar';
+import { KeywordSidebarWithFolders } from '@/components/KeywordSidebarWithFolders';
 import { KeywordManager } from '@/components/KeywordManager';
 import { ArchiveManager } from '@/components/ArchiveManager';
 import { useKeywordStorage } from '@/hooks/useKeywordStorage';
@@ -24,6 +24,10 @@ const Index = () => {
     reorderMainTargets,
     exportData,
     importData,
+    addFolder,
+    updateFolder,
+    deleteFolder,
+    moveToFolder,
   } = useKeywordStorage();
 
   const [selectedTarget, setSelectedTarget] = useState<MainTarget | null>(null);
@@ -180,8 +184,9 @@ const Index = () => {
     <div className="min-h-screen bg-background flex">
       {!showArchive ? (
         <>
-          <KeywordSidebar
+          <KeywordSidebarWithFolders
             mainTargets={activeItems.mainTargets}
+            folders={data.folders}
             selectedTarget={selectedTarget}
             onSelectTarget={setSelectedTarget}
             onAddTarget={handleAddTarget}
@@ -194,6 +199,10 @@ const Index = () => {
             onImport={handleImport}
             onShowArchive={handleShowArchive}
             archivedCount={archivedItems.mainTargets.length + archivedItems.relevantKeywords.length}
+            onAddFolder={addFolder}
+            onUpdateFolder={updateFolder}
+            onDeleteFolder={deleteFolder}
+            onMoveToFolder={moveToFolder}
           />
           
           <KeywordManager

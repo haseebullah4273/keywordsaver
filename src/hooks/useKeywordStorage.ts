@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { MainTarget, KeywordData, RelevantKeyword } from '@/types/keyword';
+import { MainTarget, KeywordData, RelevantKeyword, Folder } from '@/types/keyword';
 
 const STORAGE_KEY = 'pinterest-keyword-manager';
 
 export const useKeywordStorage = () => {
-  const [data, setData] = useState<KeywordData>({ mainTargets: [] });
+  const [data, setData] = useState<KeywordData>({ mainTargets: [], folders: [] });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export const useKeywordStorage = () => {
             isDone: target.isDone ?? false,
             priority: target.priority ?? 'medium',
             category: target.category,
+            folderId: target.folderId,
             completedAt: target.completedAt ? new Date(target.completedAt) : undefined,
             // Migration: convert string arrays to RelevantKeyword objects
             relevantKeywords: Array.isArray(target.relevantKeywords) 
@@ -41,6 +42,18 @@ export const useKeywordStorage = () => {
                 })
               : []
           }));
+          
+          // Migration: add folders array if it doesn't exist
+          if (!parsed.folders) {
+            parsed.folders = [];
+          } else {
+            parsed.folders = parsed.folders.map((folder: any) => ({
+              ...folder,
+              createdAt: new Date(folder.createdAt),
+              updatedAt: new Date(folder.updatedAt),
+            }));
+          }
+          
           setData(parsed);
         }
       } catch (error) {
@@ -250,6 +263,57 @@ export const useKeywordStorage = () => {
     saveData(importedData);
   };
 
+  const addFolder = (name: string, icon?: string, color?: string): Folder => {
+    const newFolder: Folder = {
+      id: crypto.randomUUID(),
+      name,
+      icon,
+      color,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const newData = {
+      ...data,
+      folders: [...data.folders, newFolder],
+    };
+
+    saveData(newData);
+    return newFolder;
+  };
+
+  const updateFolder = (id: string, updates: Partial<Folder>) => {
+    const newData = {
+      ...data,
+      folders: data.folders.map(folder =>
+        folder.id === id
+          ? { ...folder, ...updates, updatedAt: new Date() }
+          : folder
+      ),
+    };
+
+    saveData(newData);
+  };
+
+  const deleteFolder = (id: string) => {
+    // Move all keywords from this folder to uncategorized
+    const newData = {
+      ...data,
+      folders: data.folders.filter(folder => folder.id !== id),
+      mainTargets: data.mainTargets.map(target =>
+        target.folderId === id
+          ? { ...target, folderId: undefined }
+          : target
+      ),
+    };
+
+    saveData(newData);
+  };
+
+  const moveToFolder = (targetId: string, folderId: string | undefined) => {
+    updateMainTarget(targetId, { folderId });
+  };
+
   return {
     data,
     isLoading,
@@ -266,5 +330,9 @@ export const useKeywordStorage = () => {
     reorderMainTargets,
     exportData,
     importData,
+    addFolder,
+    updateFolder,
+    deleteFolder,
+    moveToFolder,
   };
 };
