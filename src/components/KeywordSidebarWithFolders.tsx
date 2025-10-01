@@ -31,7 +31,7 @@ interface KeywordSidebarWithFoldersProps {
   folders: Folder[];
   selectedTarget: MainTarget | null;
   onSelectTarget: (target: MainTarget) => void;
-  onAddTarget: (name: string) => void;
+  onAddTarget: (name: string, folderId?: string) => void;
   onDeleteTarget: (id: string) => void;
   onReorderTargets: (oldIndex: number, newIndex: number) => void;
   searchQuery: string;
@@ -225,6 +225,7 @@ export const KeywordSidebarWithFolders = ({
   onMoveToFolder,
 }: KeywordSidebarWithFoldersProps) => {
   const [newTargetName, setNewTargetName] = useState('');
+  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(undefined);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set(['uncategorized', ...folders.map(f => f.id)]));
 
@@ -254,8 +255,9 @@ export const KeywordSidebarWithFolders = ({
 
   const handleAddTarget = () => {
     if (newTargetName.trim()) {
-      onAddTarget(newTargetName.trim());
+      onAddTarget(newTargetName.trim(), selectedFolderId);
       setNewTargetName('');
+      setSelectedFolderId(undefined);
       setIsAddDialogOpen(false);
     }
   };
@@ -339,6 +341,32 @@ export const KeywordSidebarWithFolders = ({
                   onChange={(e) => setNewTargetName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddTarget()}
                 />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Folder (Optional)</label>
+                  <div className="grid gap-2">
+                    <Button
+                      variant={selectedFolderId === undefined ? "default" : "outline"}
+                      size="sm"
+                      className="justify-start"
+                      onClick={() => setSelectedFolderId(undefined)}
+                    >
+                      <FolderOpen className="h-4 w-4 mr-2" />
+                      Uncategorized
+                    </Button>
+                    {folders.map((folder) => (
+                      <Button
+                        key={folder.id}
+                        variant={selectedFolderId === folder.id ? "default" : "outline"}
+                        size="sm"
+                        className="justify-start"
+                        onClick={() => setSelectedFolderId(folder.id)}
+                      >
+                        <span className="mr-2">{folder.icon || '📁'}</span>
+                        {folder.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <Button onClick={handleAddTarget} variant="pinterest" className="flex-1">
                     Add Target

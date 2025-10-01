@@ -75,13 +75,14 @@ export const useKeywordStorage = () => {
     }
   };
 
-  const addMainTarget = (name: string): MainTarget => {
+  const addMainTarget = (name: string, folderId?: string): MainTarget => {
     const newTarget: MainTarget = {
       id: crypto.randomUUID(),
       name,
       relevantKeywords: [],
       isDone: false,
       priority: 'medium',
+      folderId,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

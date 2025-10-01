@@ -70,8 +70,8 @@ const Index = () => {
     }
   }, [data.mainTargets, selectedTarget, showArchive, getActiveItems]);
 
-  const handleAddTarget = (name: string) => {
-    const newTarget = addMainTarget(name);
+  const handleAddTarget = (name: string, folderId?: string) => {
+    const newTarget = addMainTarget(name, folderId);
     setSelectedTarget(newTarget);
     toast({
       title: "Target Added",
