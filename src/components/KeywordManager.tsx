@@ -357,7 +357,7 @@ export const KeywordManager = ({
   };
 
   const handleGeneratePrompt = async () => {
-    const seoPrompt = `Write a 1,500-word SEO article titled [Keyword] recipe that is both engaging and informative. The article must be written as if you are having a friendly, informal conversation with a fellow enthusiast. Ensure that every instruction below is followed precisely, producing a final output that is dynamic, user-friendly, and thoroughly human in its tone and style. Also, tell the quantity of ingredints. Each paragraph should not be longer than 50 words.    
+    const seoPrompt = `Write a 1,500-word SEO article titled ${capitalizeWords(selectedTarget.name)} recipe that is both engaging and informative. The article must be written as if you are having a friendly, informal conversation with a fellow enthusiast. Ensure that every instruction below is followed precisely, producing a final output that is dynamic, user-friendly, and thoroughly human in its tone and style. Also, tell the quantity of ingredints. Each paragraph should not be longer than 50 words.    
 
 Style & Tone Requirements:
 Conversational and Informal:
@@ -407,7 +407,7 @@ Comparative and Opinion-Based Commentary:
 When comparing products, techniques, or ideas, include clear and honest comparisons that offer genuine insights.
 Support your opinions with logical reasoning and, when possible, real-life examples.
 SEO Optimization:
-Ensure the content is optimized for SEO by naturally including relevant keywords related to [keyword] recipe.
+Ensure the content is optimized for SEO by naturally including relevant keywords related to ${capitalizeWords(selectedTarget.name)} recipe.
 The language should be SEO-friendly without sacrificing readability or the conversational tone.
 Avoid AI Fluff:
 Do not include generic, AI-generated "fluff" such as overly used phrases like "dive into" or clichés.
@@ -440,7 +440,7 @@ Leave the reader with a memorable final impression, perhaps by reintroducing a h
 
 Try to include these given keywords naturally in the content:
 
-[keywords List]
+${selectedTarget.relevantKeywords.map(kw => kw.text).join('\n')}
 
 Word count must be over 1200 words. Make sure to increase the length of making process by going into more detail and easy wording. Don't bold the ingredients. Don't use emoji icons at all. Tell the servings and time to prepare the recipe.
 
