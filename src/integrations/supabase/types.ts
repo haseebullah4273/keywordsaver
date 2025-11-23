@@ -21,6 +21,7 @@ export type Database = {
           icon: string | null
           id: string
           name: string
+          project_id: string | null
           updated_at: string
           user_id: string
         }
@@ -30,6 +31,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name: string
+          project_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -39,10 +41,18 @@ export type Database = {
           icon?: string | null
           id?: string
           name?: string
+          project_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "folders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "folders_user_id_fkey"
             columns: ["user_id"]
@@ -62,6 +72,7 @@ export type Database = {
           is_done: boolean | null
           name: string
           priority: string | null
+          project_id: string | null
           relevant_keywords: Json | null
           updated_at: string
           user_id: string
@@ -75,6 +86,7 @@ export type Database = {
           is_done?: boolean | null
           name: string
           priority?: string | null
+          project_id?: string | null
           relevant_keywords?: Json | null
           updated_at?: string
           user_id: string
@@ -88,6 +100,7 @@ export type Database = {
           is_done?: boolean | null
           name?: string
           priority?: string | null
+          project_id?: string | null
           relevant_keywords?: Json | null
           updated_at?: string
           user_id?: string
@@ -98,6 +111,13 @@ export type Database = {
             columns: ["folder_id"]
             isOneToOne: false
             referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "main_targets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
           {
@@ -129,6 +149,41 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

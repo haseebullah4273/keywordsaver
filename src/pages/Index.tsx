@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { KeywordSidebarWithFolders } from '@/components/KeywordSidebarWithFolders';
 import { KeywordManager } from '@/components/KeywordManager';
 import { ArchiveManager } from '@/components/ArchiveManager';
-import { useKeywordStorage } from '@/hooks/useKeywordStorage';
+import { useSupabaseKeywordStorage } from '@/hooks/useSupabaseKeywordStorage';
 import { MainTarget } from '@/types/keyword';
 import { useToast } from '@/hooks/use-toast';
+import { ProjectSelector } from '@/components/ProjectSelector';
+import { Button } from '@/components/ui/button';
+import { LogOut, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  
   const {
     data,
     isLoading,
+    user,
     addMainTarget,
     updateMainTarget,
     deleteMainTarget,
@@ -27,13 +36,20 @@ const Index = () => {
     updateFolder,
     deleteFolder,
     moveToFolder,
-  } = useKeywordStorage();
+  } = useSupabaseKeywordStorage(selectedProjectId);
 
   const [selectedTarget, setSelectedTarget] = useState<MainTarget | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Array<{ mainTarget: string; keyword: string; type: 'main' | 'relevant' }>>([]);
   const [showArchive, setShowArchive] = useState(false);
   const { toast } = useToast();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!isLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, isLoading, navigate]);
 
   // Update search results when query changes
   useEffect(() => {
@@ -69,13 +85,21 @@ const Index = () => {
     }
   }, [data.mainTargets, selectedTarget, showArchive, getActiveItems]);
 
-  const handleAddTarget = (name: string, folderId?: string) => {
-    const newTarget = addMainTarget(name, folderId);
-    setSelectedTarget(newTarget);
-    toast({
-      title: "Target Added",
-      description: `"${name}" has been created successfully.`,
-    });
+  const handleAddTarget = async (name: string, folderId?: string) => {
+    try {
+      const newTarget = await addMainTarget(name, folderId);
+      setSelectedTarget(newTarget);
+      toast({
+        title: "Target Added",
+        description: `"${name}" has been created successfully.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add target.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteTarget = (id: string) => {
@@ -165,8 +189,24 @@ const Index = () => {
     toggleRelevantKeywordDone(mainTargetId, keywordText);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
   if (isLoading) {
-    return <div className="p-4">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="text-lg">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
   }
 
   const activeItems = getActiveItems();
@@ -174,8 +214,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b bg-card/50 backdrop-blur-sm px-4 py-3">
+      <header className="border-b bg-card/50 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-primary">Pinterest Keywords Manager</h1>
+        <div className="flex items-center gap-4">
+          <ProjectSelector
+            selectedProjectId={selectedProjectId}
+            onProjectChange={setSelectedProjectId}
+          />
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
       </header>
       
       <div className="flex flex-1 overflow-hidden">
