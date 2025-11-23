@@ -33,7 +33,7 @@ import {
 
 interface KeywordManagerProps {
   selectedTarget: MainTarget | null;
-  onAddKeywords: (mainTargetId: string, keywords: string[]) => BulkInputResult;
+  onAddKeywords: (mainTargetId: string, keywords: string[]) => Promise<BulkInputResult>;
   onRemoveKeyword: (mainTargetId: string, keyword: string) => void;
   onUpdateTarget: (id: string, updates: Partial<MainTarget>) => void;
   onToggleMainTargetDone?: (id: string) => void;
@@ -127,7 +127,7 @@ export const KeywordManager = ({
     );
   }
 
-  const handleAddSingleKeyword = () => {
+  const handleAddSingleKeyword = async () => {
     if (!newKeyword.trim()) return;
 
     // Parse keywords from textarea (support both line breaks and commas)
@@ -136,25 +136,33 @@ export const KeywordManager = ({
       .map(k => capitalizeWords(k.trim()))
       .filter(k => k.length > 0);
 
-    const result = onAddKeywords(selectedTarget.id, keywords);
-    
-    let message = '';
-    if (result.added.length > 0) {
-      message += `${result.added.length} keyword${result.added.length > 1 ? 's' : ''} added. `;
-    }
-    if (result.duplicates.length > 0) {
-      message += `${result.duplicates.length} duplicate${result.duplicates.length > 1 ? 's' : ''} skipped. `;
-    }
+    try {
+      const result = await onAddKeywords(selectedTarget.id, keywords);
+      
+      let message = '';
+      if (result.added.length > 0) {
+        message += `${result.added.length} keyword${result.added.length > 1 ? 's' : ''} added. `;
+      }
+      if (result.duplicates.length > 0) {
+        message += `${result.duplicates.length} duplicate${result.duplicates.length > 1 ? 's' : ''} skipped. `;
+      }
 
-    toast({
-      title: "Keywords Added",
-      description: message.trim(),
-    });
+      toast({
+        title: "Keywords Added",
+        description: message.trim(),
+      });
 
-    setNewKeyword('');
+      setNewKeyword('');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add keywords",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleBulkAdd = () => {
+  const handleBulkAdd = async () => {
     if (!bulkKeywords.trim()) return;
 
     const keywords = bulkKeywords
@@ -162,26 +170,34 @@ export const KeywordManager = ({
       .map(k => capitalizeWords(k.trim()))
       .filter(k => k.length > 0);
 
-    const result = onAddKeywords(selectedTarget.id, keywords);
-    
-    let message = '';
-    if (result.added.length > 0) {
-      message += `${result.added.length} keywords added. `;
-    }
-    if (result.duplicates.length > 0) {
-      message += `${result.duplicates.length} duplicates skipped. `;
-    }
-    if (result.skipped.length > 0) {
-      message += `${result.skipped.length} empty lines skipped.`;
-    }
+    try {
+      const result = await onAddKeywords(selectedTarget.id, keywords);
+      
+      let message = '';
+      if (result.added.length > 0) {
+        message += `${result.added.length} keywords added. `;
+      }
+      if (result.duplicates.length > 0) {
+        message += `${result.duplicates.length} duplicates skipped. `;
+      }
+      if (result.skipped.length > 0) {
+        message += `${result.skipped.length} empty lines skipped.`;
+      }
 
-    toast({
-      title: "Bulk Import Complete",
-      description: message.trim(),
-    });
+      toast({
+        title: "Bulk Import Complete",
+        description: message.trim(),
+      });
 
-    setBulkKeywords('');
-    setIsBulkDialogOpen(false);
+      setBulkKeywords('');
+      setIsBulkDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add keywords",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUpdateName = () => {
@@ -339,21 +355,29 @@ export const KeywordManager = ({
     }
   };
 
-  const handleAddFromTemplate = (templateKeywords: string[]) => {
-    const result = onAddKeywords(selectedTarget.id, templateKeywords);
-    
-    let message = '';
-    if (result.added.length > 0) {
-      message += `${result.added.length} keywords added from template. `;
-    }
-    if (result.duplicates.length > 0) {
-      message += `${result.duplicates.length} duplicates skipped. `;
-    }
+  const handleAddFromTemplate = async (templateKeywords: string[]) => {
+    try {
+      const result = await onAddKeywords(selectedTarget.id, templateKeywords);
+      
+      let message = '';
+      if (result.added.length > 0) {
+        message += `${result.added.length} keywords added from template. `;
+      }
+      if (result.duplicates.length > 0) {
+        message += `${result.duplicates.length} duplicates skipped. `;
+      }
 
-    toast({
-      title: "Template Applied",
-      description: message.trim(),
-    });
+      toast({
+        title: "Template Applied",
+        description: message.trim(),
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add keywords from template",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleGeneratePrompt = async () => {
